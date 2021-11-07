@@ -1,9 +1,9 @@
 const createTodoSchema = {
   type: "object",
   properties: {
-      name: { type: 'string' }
+    name: { type: "string" },
   },
-  required: ['name']
-}
+  required: ["name"],
+};
 
 export { createTodoSchema };

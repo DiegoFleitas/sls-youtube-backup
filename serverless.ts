@@ -1,6 +1,5 @@
 import type { AWS } from '@serverless/typescript';
 
-import getCityInfo from '@functions/getCityInfo';
 import { createTodo, deleteTodo, updateTodo, getAllTodos } from '@functions/todo';
 
 import dynamoDbConfig from 'resources/dynamodb';
@@ -43,7 +42,7 @@ const serverlessConfiguration: AWS = {
   },
   // import the function via paths
   functions: { 
-    getCityInfo, createTodo, deleteTodo, updateTodo, getAllTodos
+    createTodo, deleteTodo, updateTodo, getAllTodos
   },
   resources: dynamoDbConfig
 };

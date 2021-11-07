@@ -1,1 +1,1 @@
-export { default as getCityInfo } from './getCityInfo';
+export { default as getCityInfo } from "./getCityInfo";

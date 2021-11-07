@@ -1,33 +1,33 @@
-import { v4 as uuidv4 } from 'uuid';
-import { TodoRepository } from '../repositories/todoRepositories';
-import { TodoItem } from '../model/todoItem';
+import { v4 as uuidv4 } from "uuid";
+import { TodoRepository } from "../repositories/todoRepositories";
+import { TodoItem } from "../model/todoItem";
 
 export class TodoService {
-    private readonly todoRepository: TodoRepository;
-    
-    constructor(todoRepository: TodoRepository = new TodoRepository()) {
-        this.todoRepository = todoRepository; 
-    }
+  private readonly todoRepository: TodoRepository;
 
-    async getAllTodos(): Promise<TodoItem[]> {
-        return this.todoRepository.getAllTodos();
-    }
+  constructor(todoRepository: TodoRepository = new TodoRepository()) {
+    this.todoRepository = todoRepository;
+  }
 
-    async createTodo(name: string): Promise<TodoItem> {
-        const id = uuidv4();
-        return await this.todoRepository.createTodo({
-            id,
-            name,
-            done: false,
-            createdAt: new Date().toISOString()
-        })
-    }
+  async getAllTodos(): Promise<TodoItem[]> {
+    return this.todoRepository.getAllTodos();
+  }
 
-    async updateTodo(partialTodo: Partial<TodoItem>) {
-        return await this.todoRepository.updateTodo(partialTodo);
-    }
+  async createTodo(name: string): Promise<TodoItem> {
+    const id = uuidv4();
+    return await this.todoRepository.createTodo({
+      id,
+      name,
+      done: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
 
-    async deleteTodoById(id: string) {
-        return await this.todoRepository.deleteTodoById(id);
-    }
+  async updateTodo(partialTodo: Partial<TodoItem>) {
+    return await this.todoRepository.updateTodo(partialTodo);
+  }
+
+  async deleteTodoById(id: string) {
+    return await this.todoRepository.deleteTodoById(id);
+  }
 }
