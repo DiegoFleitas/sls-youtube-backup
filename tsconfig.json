@@ -20,5 +20,14 @@
   ],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "none",
+        "varsIgnorePattern": "^_"
+      }
+    ]
   }
 }
