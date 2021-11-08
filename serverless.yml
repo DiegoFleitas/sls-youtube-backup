@@ -1,0 +1,103 @@
+service:
+  name: serverless-sarambabot
+frameworkVersion: '2'
+custom:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    exclude:
+      - aws-sdk
+    target: node14
+    define: {}
+    platform: node
+plugins:
+  - serverless-esbuild
+  - serverless-iam-roles-per-function       
+  - serverless-offline
+provider:
+  stage: dev
+  region: us-east-1
+  name: aws
+  runtime: nodejs14.x
+  apiGateway:
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true        
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+    TODOS_TABLE: todo-list-table
+  lambdaHashingVersion: '20201221'
+  versionFunctions: true
+package:
+  individually: true
+functions:
+  twitter-stream:
+    handler: src/functions/twitterStream/handler.main
+    # handler: dist/functions/twitterStream/handler.main
+    events:
+      - http:
+          method: any
+          path: /twitterStream/{any+}
+          cors: true
+    name: serverless-sarambabot-dev-twitterStream
+  # createTodo:
+  #   handler: src/functions/todo/handler.createTodo
+  #   events:
+  #   - http:
+  #       method: post
+  #       path: todos
+  #       request:
+  #         schema:
+  #           application/json: createTodoSchema
+  #   iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #     - dynamodb:PutItem
+  #     Resource:
+  #       Fn::GetAtt:
+  #       - TodosDynamoDBTable
+  #       - Arn
+  # getAllTodos:
+  #   handler: src/functions/todo/handler.getAllTodos
+  #   events:
+  #   - http:
+  #       method: get
+  #       path: todos
+  #   iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #     - dynamodb:Scan
+  #     Resource:
+  #       Fn::GetAtt:
+  #       - TodosDynamoDBTable
+  #       - Arn
+  # updateTodo:
+  #   handler: src/functions/todo/handler.updateTodo
+  #   events:
+  #   - http:
+  #       method: put
+  #       path: todo/{id}
+  #   iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #     - dynamodb:UpdateItem
+  #     Resource:
+  #       Fn::GetAtt:
+  #       - TodosDynamoDBTable
+  #       - Arn
+  # deleteTodo:
+  #   handler: src/functions/todo/handler.deleteTodo
+  #   events:
+  #   - http:
+  #       method: delete
+  #       path: todo/{id}
+  #   iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #     - dynamodb:DeleteItem
+  #     Resource:
+  #       Fn::GetAtt:
+  #       - TodosDynamoDBTable
+  #       - Arn
+# resources:
+#   - ${file(resources/dynamodb.yml)}

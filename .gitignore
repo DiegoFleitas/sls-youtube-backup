@@ -17,4 +17,6 @@ out-logger.json
 
 .DS_Store
 
-secrets.js
+secrets.*
+
+dist/*
