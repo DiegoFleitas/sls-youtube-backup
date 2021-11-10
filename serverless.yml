@@ -25,7 +25,7 @@ provider:
     shouldStartNameWithService: true        
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
-    TODOS_TABLE: todo-list-table
+    TWEETS_TABLE: sb_tweets_test
   lambdaHashingVersion: '20201221'
   versionFunctions: true
 package:
@@ -49,6 +49,23 @@ functions:
           path: sendTweetToDiscord
           method: GET
           cors: true
+  pollTwitterFeed:
+    handler: src/functions/pollTwitterFeed/handler.main
+    memorySize: 128 # MB
+    timeout: 5 # seconds
+    events:
+      - http:
+          path: pollTwitterFeed
+          method: GET
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+        - dynamodb:PutItem
+        Resource:
+          Fn::GetAtt:
+          - TweetsDynamoDBTable
+          - Arn
   # createTodo:
   #   handler: src/functions/todo/handler.createTodo
   #   events:

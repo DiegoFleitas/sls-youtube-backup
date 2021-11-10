@@ -1,8 +1,8 @@
 Resources:
-    TodosDynamoDBTable:
+    TweetsDynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: todo-list-table
+        TableName: sb_tweets_test
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
