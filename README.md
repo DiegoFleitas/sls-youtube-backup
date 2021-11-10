@@ -94,3 +94,9 @@ Any tsconfig.json can be used, but if you do, set the environment variable `TS_N
 How its done:
     Discord weebhook on AWS API Gateway. Discord sends a message to the endpoint. The connected Lambda function is triggered, running our code and returning stuff to Discord
     MY TRIGGER IS TWITTER THO??
+
+### Try locally
+
+```
+npx sls invoke local -f sendTweetToDiscord
+```

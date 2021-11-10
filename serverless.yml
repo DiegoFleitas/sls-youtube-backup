@@ -39,6 +39,7 @@ functions:
       - http:
           path: sendTweetToDiscord
           method: POST
+          cors: true
   # createTodo:
   #   handler: src/functions/todo/handler.createTodo
   #   events:

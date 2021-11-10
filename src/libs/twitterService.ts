@@ -1,4 +1,4 @@
-import * as EventEmitter from "events";
+import { EventEmitter } from "events";
 
 export class TwitterService extends EventEmitter {
   emitNewTweet(data) {
