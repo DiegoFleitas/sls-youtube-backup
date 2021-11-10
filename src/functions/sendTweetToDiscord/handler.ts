@@ -1,20 +1,34 @@
 // import "source-map-support/register";
 
-// // import { middyfy } from "@libs/lambda";
-// import { TwitterService } from "@libs/twitterService";
-// import { DiscordService } from "@libs/discordService";
+import { middyfy } from "@libs/lambda";
+import { formatJSONResponse } from "@libs/apiGateway";
+import { TwitterService } from "@libs/twitterService";
+import { DiscordService } from "@libs/discordService";
 
-// async function sendTweetToDiscord(): Promise<any> {
-//   try {
-//     const DS = new DiscordService();
+interface formattedJSONResponse {
+  statusCode: number;
+  body: string;
+}
 
-//     TwitterService.on("new-tweet", async (message) => {
-//       console.log("an event occurred!");
-//       await DS.postMessage(message);
-//     });
-//   } catch (ex) {
-//     console.error(ex);
-//   }
-// };
+const sendTweetToDiscord = async (_event): Promise<formattedJSONResponse> => {
+  try {
+    const DS = new DiscordService();
+    const TS = new TwitterService();
 
-// // export const handler = middyfy(sendTweetToDiscord);
+    TS.on("new-tweet", async (message) => {
+      console.log("an event occurred!");
+      await DS.postMessage(message);
+    });
+
+    return formatJSONResponse({
+      message: "success",
+    });
+  } catch (err) {
+    return formatJSONResponse({
+      statusCode: 500,
+      message: err.getMessage(),
+    });
+  }
+};
+
+export const main = middyfy(sendTweetToDiscord);
