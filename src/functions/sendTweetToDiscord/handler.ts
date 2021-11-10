@@ -9,7 +9,7 @@ interface formattedJSONResponse {
   body: string;
 }
 
-const sendTweetToDiscord: ValidatedEventAPIGatewayProxyEvent<void>  = async (_event): Promise<formattedJSONResponse> => {
+const sendTweetToDiscord: ValidatedEventAPIGatewayProxyEvent<void> = async (_event): Promise<formattedJSONResponse> => {
   try {
     const DS = new DiscordService();
     const TS = new TwitterService();
@@ -23,9 +23,10 @@ const sendTweetToDiscord: ValidatedEventAPIGatewayProxyEvent<void>  = async (_ev
       message: "success",
     });
   } catch (err) {
+    console.error(err);
     return formatJSONResponse({
       statusCode: 500,
-      message: err.getMessage(),
+      message: err,
     });
   }
 };

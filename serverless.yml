@@ -40,6 +40,15 @@ functions:
           path: sendTweetToDiscord
           method: POST
           cors: true
+  challengeResponseCheck:
+    handler: src/functions/challengeResponseCheck/handler.main
+    memorySize: 128 # MB
+    timeout: 5 # seconds
+    events:
+      - http:
+          path: sendTweetToDiscord
+          method: GET
+          cors: true
   # createTodo:
   #   handler: src/functions/todo/handler.createTodo
   #   events:
