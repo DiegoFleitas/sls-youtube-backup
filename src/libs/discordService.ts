@@ -19,11 +19,14 @@ export class DiscordService {
         allowed_mentions: { parse: ["users"] },
       }),
     };
-    return axios.request(options).then(response => {
-      return response.data;
-    }).catch(error => {
-      console.log(error);
-      return error;
-    });
+    return axios
+      .request(options)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+        return error;
+      });
   }
 }

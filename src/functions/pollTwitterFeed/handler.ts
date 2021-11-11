@@ -1,5 +1,5 @@
 import { middyfy } from "@libs/lambda";
-import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/apiGateway';
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
 import { formatJSONResponse } from "@libs/apiGateway";
 import { TwitterService } from "@libs/twitterService";
 import { TweetRepository } from "../../../repositories/tweetRepository";
@@ -10,30 +10,36 @@ interface formattedJSONResponse {
   body: string;
 }
 
-const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (_event): Promise<formattedJSONResponse> => {
+const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
+  _event
+): Promise<formattedJSONResponse> => {
   try {
     const TS = new TwitterService();
     const db = new TweetRepository();
 
     const response = await TS.getTweets();
-    const tweets: TweetItem[] = response.data.map(tweet => {
-      return <TweetItem> {
+    const tweets: TweetItem[] = response.data.map((tweet) => {
+      return <TweetItem>{
         id: tweet.id,
         text: tweet.text,
         sent: false,
-        createdAt: tweet.created_at
+        createdAt: tweet.created_at,
       };
     });
 
     if (!tweets) {
       return formatJSONResponse({
         message: "no tweets",
-      });  
+      });
     }
 
-    const savedTweets = await db.saveNewTweets(tweets);
+    for (const tweet of tweets) {
+      const response = await db.createTweet(tweet);
+      console.log(response);
+    }
+
     return formatJSONResponse({
-      message: JSON.stringify(savedTweets),
+      message: JSON.stringify(response),
     });
   } catch (err) {
     console.error(err);
