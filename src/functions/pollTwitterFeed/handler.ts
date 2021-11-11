@@ -2,7 +2,7 @@ import { middyfy } from "@libs/lambda";
 import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/apiGateway';
 import { formatJSONResponse } from "@libs/apiGateway";
 import { TwitterService } from "@libs/twitterService";
-import { TweetRepository } from "../../../repositories/TweetRepository";
+import { TweetRepository } from "../../../repositories/tweetRepository";
 import { TweetItem } from "../../../model/TweetItem";
 
 interface formattedJSONResponse {
@@ -16,8 +16,7 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (_event)
     const db = new TweetRepository();
 
     const response = await TS.getTweets();
-    const parsed = JSON.parse(response);
-    const tweets: TweetItem[] = parsed.data.map(tweet => {
+    const tweets: TweetItem[] = response.data.map(tweet => {
       return <TweetItem> {
         id: tweet.id,
         text: tweet.text,

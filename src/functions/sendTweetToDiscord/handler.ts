@@ -15,12 +15,10 @@ const sendTweetToDiscord: ValidatedEventAPIGatewayProxyEvent<void> = async (_eve
     const TS = new TwitterService();
 
     TS.on("new-tweet", async (message) => {
-      console.log("an event occurred!");
-      await DS.postMessage(message);
-    });
-
-    return formatJSONResponse({
-      message: "success",
+      const response = await DS.postMessage(message);
+      return formatJSONResponse({
+        message: JSON.stringify(response),
+      });
     });
   } catch (err) {
     console.error(err);
