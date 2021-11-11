@@ -1,7 +1,9 @@
 import type { DocumentClient } from 'aws-sdk/clients/dynamodb';
-
 import { TweetItem } from '../model/tweetItem';
 import * as AWS from 'aws-sdk';
+
+// Log AWS SDK calls
+AWS.config.logger = console;
 
 export class TweetRepository {
     constructor(
@@ -17,11 +19,18 @@ export class TweetRepository {
     }
 
     async createTweet(tweet: TweetItem): Promise<TweetItem> {
+      try {
         await this.docClient.put({
-            TableName: this.tweetTable,
-            Item: tweet
+          TableName: this.tweetTable,
+          Item: tweet,
+          ConditionExpression: 'attribute_not_exists(id)'
         }).promise();
         return tweet;
+      } catch (e) {
+        if (e.code !== "ConditionalCheckFailedException") {
+          throw e;
+        }
+      }
     }
 
     async updateTweet(partialTweet: Partial<TweetItem>): Promise<TweetItem> {
@@ -50,11 +59,13 @@ export class TweetRepository {
         }).promise();
     }
 
-    // since batchWrite cannot update items, we don't worry about duplicate tweets
-    async saveNewTweets(tweets: TweetItem[]): Promise<any> {
+    // note batches don't support conditionals inside the update expression
+    async saveTweets(tweets: TweetItem[]): Promise<any> {
       const batch = tweets.map(tweet => {
         return <any> {
-          PutRequest: { Item: tweet }
+          PutRequest: { 
+            Item: tweet
+          }
         };
       });
       return await this.docClient.batchWrite({
