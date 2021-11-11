@@ -18,7 +18,7 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
     const db = new TweetRepository();
 
     const response = await TS.getTweets();
-    const tweets: TweetItem[] = response.data.map((tweet) => {
+    const tweets: TweetItem[] = response.data.map(tweet => {
       return <TweetItem>{
         id: tweet.id,
         text: tweet.text,
@@ -34,12 +34,11 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
     }
 
     for (const tweet of tweets) {
-      const response = await db.createTweet(tweet);
-      console.log(response);
+      await db.createTweet(tweet);
     }
 
     return formatJSONResponse({
-      message: JSON.stringify(response),
+      message: "success",
     });
   } catch (err) {
     console.error(err);
