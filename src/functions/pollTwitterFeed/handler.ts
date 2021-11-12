@@ -4,6 +4,7 @@ import { formatJSONResponse } from "@libs/apiGateway";
 import { TwitterService } from "@libs/twitterService";
 import { TweetRepository } from "../../../repositories/tweetRepository";
 import { TweetItem } from "../../../model/TweetItem";
+import * as AWS from "aws-sdk";
 
 interface formattedJSONResponse {
   statusCode: number;
@@ -11,7 +12,8 @@ interface formattedJSONResponse {
 }
 
 const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
-  _event
+  _event,
+  _context
 ): Promise<formattedJSONResponse> => {
   try {
     const TS = new TwitterService();
@@ -22,7 +24,7 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
       return <TweetItem>{
         id: tweet.id,
         text: tweet.text,
-        sent: false,
+        sent: 0,
         createdAt: tweet.created_at,
       };
     });
@@ -36,6 +38,27 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
     for (const tweet of tweets) {
       await db.createTweet(tweet);
     }
+
+    const tweetsToForward = await db.getAllNotSentTweets();
+    const lambda = new AWS.Lambda({
+      region: `${process.env.REGION}`,
+    });
+    lambda.invoke(
+      {
+        FunctionName: `${process.env.LAMBDA_SEND_TWEETS_TO_DISCORD}`,
+        InvocationType: "Event",
+        LogType: "Tail",
+        Payload: JSON.stringify(tweetsToForward),
+      },
+      (error, data) => {
+        if (error) {
+          console.log(error);
+        } else {
+          // TODO: update tweet to sent
+          console.log(data);
+        }
+      }
+    );
 
     return formatJSONResponse({
       message: "success",

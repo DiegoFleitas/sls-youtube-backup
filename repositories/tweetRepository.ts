@@ -18,6 +18,24 @@ export class TweetRepository {
         return result.Items as TweetItem[];
     }
 
+    async getAllNotSentTweets(): Promise<TweetItem[]> {
+      const result = await this.docClient.query({
+          TableName: this.tweetTable,
+          IndexName: 'TweetSent-index',
+          KeyConditionExpression: "sent = :sent",
+          ExpressionAttributeValues: {
+            ":sent": 0
+          }
+      }, (err, data) => {
+        if(err) {
+          console.log(err);
+        } else {
+          console.log(data);
+        }
+      }).promise();
+      return result.Items as TweetItem[];
+    }
+
     async createTweet(tweet: TweetItem): Promise<TweetItem> {
       try {
         await this.docClient.put({

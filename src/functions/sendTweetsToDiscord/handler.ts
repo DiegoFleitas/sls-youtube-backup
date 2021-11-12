@@ -9,18 +9,23 @@ interface formattedJSONResponse {
   body: string;
 }
 
-const sendTweetToDiscord: ValidatedEventAPIGatewayProxyEvent<void> = async (
-  _event
+const sendTweetsToDiscord: ValidatedEventAPIGatewayProxyEvent<void> = async (
+  event,
+  _context
 ): Promise<formattedJSONResponse> => {
   try {
+    console.log(typeof event, event);
     const DS = new DiscordService();
     const TS = new TwitterService();
+    
+    // tweetsToForward.forEach(async (tweet) => {
 
-    TS.on("new-tweet", async (message) => {
-      const response = await DS.postMessage(message);
-      return formatJSONResponse({
-        message: JSON.stringify(response),
-      });
+    // });
+
+    // const response = await DS.postMessage('los meme');
+    return formatJSONResponse({
+      // message: JSON.stringify(response),
+      message: JSON.stringify("success"),
     });
   } catch (err) {
     console.error(err);
@@ -31,4 +36,4 @@ const sendTweetToDiscord: ValidatedEventAPIGatewayProxyEvent<void> = async (
   }
 };
 
-export const main = middyfy(sendTweetToDiscord);
+export const main = middyfy(sendTweetsToDiscord);

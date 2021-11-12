@@ -99,4 +99,11 @@ How its done:
 
 ```
 npx sls invoke local -f sendTweetToDiscord
+npx sls invoke local -f getUnsentTweets
+```
+
+### Fix code style
+
+```
+npx eslint ./src/** --fix
 ```

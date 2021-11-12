@@ -8,6 +8,8 @@ Resources:
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
+          - AttributeName: sent
+            AttributeType: N # note AttributeType can only be S, N or B
         KeySchema:
           - AttributeName: id
             KeyType: HASH # Partition key
@@ -15,7 +17,7 @@ Resources:
             KeyType: RANGE # Sort key
         BillingMode: PAY_PER_REQUEST
         LocalSecondaryIndexes:
-          - IndexName: tweetIdCreatedAtIndex
+          - IndexName: TweetIdCreatedAt-index
             KeySchema:
               - AttributeName: id
                 KeyType: HASH # Partition key
@@ -23,3 +25,11 @@ Resources:
                 KeyType: RANGE # Sort key
             Projection:
               ProjectionType: KEYS_ONLY
+        GlobalSecondaryIndexes: # allows us to use query instead of scan (the latter is more expensive)
+          - IndexName: TweetSent-index
+            KeySchema:
+              - AttributeName: sent
+                KeyType: HASH # Partition key
+            Projection:
+              ProjectionType: ALL
+        
