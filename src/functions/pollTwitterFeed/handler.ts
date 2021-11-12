@@ -41,7 +41,7 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
 
     const tweetsToForward = await db.getAllNotSentTweets();
     console.log(tweetsToForward);
-    if (tweetsToForward) {
+    if (tweetsToForward.length > 0) {
       const lambda = new AWS.Lambda({
         region: `${process.env.REGION}`,
       });
