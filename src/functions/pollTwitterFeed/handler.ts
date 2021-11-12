@@ -42,35 +42,27 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
     }
 
     const tweetsToForward = await db.getAllNotSentTweets();
-    // Might need to fix text
-    // tweetsToForward = tweetsToForward.map(tweet => {
-    //   return <TweetItem>{
-    //     id: tweet.id,
-    //     text: tweet.text,
-    //     sent: tweet.sent,
-    //     createdAt: tweet.createdAt,
-    //   };
-    // });
-
-    const lambda = new AWS.Lambda({
-      region: `${process.env.REGION}`,
-    });
-    lambda.invoke(
-      {
-        FunctionName: `${process.env.LAMBDA_SEND_TWEETS_TO_DISCORD}`,
-        InvocationType: "Event",
-        LogType: "Tail",
-        Payload: JSON.stringify(tweetsToForward),
-      },
-      (error, data) => {
-        if (error) {
-          console.log(error);
-        } else {
-          // TODO: update tweet to sent
-          console.log(data);
+    if (tweetsToForward) {
+      const lambda = new AWS.Lambda({
+        region: `${process.env.REGION}`,
+      });
+      lambda.invoke(
+        {
+          FunctionName: `${process.env.LAMBDA_SEND_TWEETS_TO_DISCORD}`,
+          InvocationType: "Event",
+          LogType: "Tail",
+          Payload: JSON.stringify(tweetsToForward),
+        },
+        (error, data) => {
+          if (error) {
+            console.log(error);
+          } else {
+            // TODO: update tweet to sent
+            console.log(data);
+          }
         }
-      }
-    );
+      );
+    }
 
     return formatJSONResponse({
       message: "success",
