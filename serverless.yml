@@ -68,6 +68,21 @@ functions:
             - Arn
       - Effect: Allow
         Action:
+        - dynamodb:PutItem
+        - dynamodb:Query
+        Resource:
+          - Fn::GetAtt:
+              - TweetsDynamoDBTable
+              - Arn
+          - Fn::Join:
+              - /
+              - - Fn::GetAtt:
+                    - TweetsDynamoDBTable
+                    - Arn
+                - index
+                - TweetSent-index
+      - Effect: Allow
+        Action:
         - lambda:InvokeFunction
         Resource: '*'
   # challengeResponseCheck:
