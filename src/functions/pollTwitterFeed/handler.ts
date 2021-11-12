@@ -16,7 +16,6 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
   _context
 ): Promise<formattedJSONResponse> => {
   try {
-    console.log('pollTwitterFeed called');
     const TS = new TwitterService();
     const db = new TweetRepository();
 
@@ -31,7 +30,6 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
     });
 
     if (!tweets) {
-      console.log('no tweets');
       return formatJSONResponse({
         message: "no tweets",
       });
@@ -53,12 +51,9 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
           LogType: "Tail",
           Payload: JSON.stringify(tweetsToForward),
         },
-        (error, data) => {
+        (error, _data) => {
           if (error) {
             console.log(error);
-          } else {
-            // TODO: update tweet to sent
-            console.log(data);
           }
         }
       );
