@@ -1,31 +1,37 @@
 import { middyfy } from "@libs/lambda";
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
 import { formatJSONResponse } from "@libs/apiGateway";
-import { TwitterService } from "@libs/twitterService";
 import { DiscordService } from "@libs/discordService";
+import { TweetItem } from "model/tweetItem";
+import { TweetRepository } from "../../../repositories/tweetRepository";
 
 interface formattedJSONResponse {
   statusCode: number;
   body: string;
 }
 
-const sendTweetsToDiscord: ValidatedEventAPIGatewayProxyEvent<void> = async (
+const sendTweetsToDiscord: ValidatedEventAPIGatewayProxyEvent<any> = async (
   event,
   _context
 ): Promise<formattedJSONResponse> => {
   try {
-    console.log(typeof event, event);
+    // console.log(typeof event, event);
+    const tweetsToForward = <TweetItem[]><unknown> event;
     const DS = new DiscordService();
-    const TS = new TwitterService();
+    const db = new TweetRepository();
     
-    // tweetsToForward.forEach(async (tweet) => {
+    // do one
+    tweetsToForward.splice(1);
 
-    // });
+    tweetsToForward.forEach(async (tweet) => {
+      // console.log(tweet.text)
+      // await DS.postMessage(tweet.text);
+      tweet.sent = 1;
+      await db.updateTweet(tweet);
+    });
 
-    // const response = await DS.postMessage('los meme');
     return formatJSONResponse({
-      // message: JSON.stringify(response),
-      message: JSON.stringify("success"),
+      message: "Successfully sent tweets to discord",
     });
   } catch (err) {
     console.error(err);

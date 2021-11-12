@@ -39,7 +39,17 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
       await db.createTweet(tweet);
     }
 
-    const tweetsToForward = await db.getAllNotSentTweets();
+    let tweetsToForward = await db.getAllNotSentTweets();
+    // Might need to fix text
+    // tweetsToForward = tweetsToForward.map(tweet => {
+    //   return <TweetItem>{
+    //     id: tweet.id,
+    //     text: tweet.text,
+    //     sent: tweet.sent,
+    //     createdAt: tweet.createdAt,
+    //   };
+    // });
+
     const lambda = new AWS.Lambda({
       region: `${process.env.REGION}`,
     });

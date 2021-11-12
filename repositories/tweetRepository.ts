@@ -52,18 +52,20 @@ export class TweetRepository {
     }
 
     async updateTweet(partialTweet: Partial<TweetItem>): Promise<TweetItem> {
-        const { id, text, sent } = partialTweet;
+        const { id, text, sent, createdAt } = partialTweet;
         const updated = await this.docClient.update({
             TableName: this.tweetTable,
-            Key: { 'id': id },
-            UpdateExpression: 'set #text = :text, sent = :sent, createdAt = :createdAt',
+            Key: { 
+              'id': id, 
+              'createdAt': createdAt
+            },
+            UpdateExpression: 'set #text = :text, sent = :sent',
             ExpressionAttributeNames: {
-                '#text': 'text'
+              '#text': 'text'
             },
             ExpressionAttributeValues: {
-                ':text': text,
-                ':sent': sent,
-                ':createdAt': new Date().toISOString()
+              ':text': text,
+              ':sent': sent
             },
             ReturnValues: 'ALL_NEW'
         }).promise();
