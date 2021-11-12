@@ -16,11 +16,12 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
   _context
 ): Promise<formattedJSONResponse> => {
   try {
+    console.log('pollTwitterFeed called');
     const TS = new TwitterService();
     const db = new TweetRepository();
 
     const response = await TS.getTweets();
-    const tweets: TweetItem[] = response.data.map(tweet => {
+    const tweets: TweetItem[] = response.data.map((tweet) => {
       return <TweetItem>{
         id: tweet.id,
         text: tweet.text,
@@ -30,6 +31,7 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
     });
 
     if (!tweets) {
+      console.log('no tweets');
       return formatJSONResponse({
         message: "no tweets",
       });
@@ -39,7 +41,7 @@ const pollTwitterFeed: ValidatedEventAPIGatewayProxyEvent<void> = async (
       await db.createTweet(tweet);
     }
 
-    let tweetsToForward = await db.getAllNotSentTweets();
+    const tweetsToForward = await db.getAllNotSentTweets();
     // Might need to fix text
     // tweetsToForward = tweetsToForward.map(tweet => {
     //   return <TweetItem>{

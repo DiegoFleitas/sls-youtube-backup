@@ -15,17 +15,17 @@ const sendTweetsToDiscord: ValidatedEventAPIGatewayProxyEvent<any> = async (
   _context
 ): Promise<formattedJSONResponse> => {
   try {
-    // console.log(typeof event, event);
-    const tweetsToForward = <TweetItem[]><unknown> event;
+    console.log('sendTweetsToDiscord called');
+    const tweetsToForward = <TweetItem[]>(<unknown>event);
     const DS = new DiscordService();
     const db = new TweetRepository();
-    
+
     // do one
-    tweetsToForward.splice(1);
+    // tweetsToForward.splice(1);
 
     tweetsToForward.forEach(async (tweet) => {
       // console.log(tweet.text)
-      // await DS.postMessage(tweet.text);
+      await DS.postMessage(tweet.text);
       tweet.sent = 1;
       await db.updateTweet(tweet);
     });
