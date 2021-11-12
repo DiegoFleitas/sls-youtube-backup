@@ -26,11 +26,9 @@ export class TweetRepository {
           ExpressionAttributeValues: {
             ":sent": 0
           }
-      }, (err, data) => {
+      }, (err, _data) => {
         if(err) {
           console.log(err);
-        } else {
-          console.log(data);
         }
       }).promise();
       return result.Items as TweetItem[];
