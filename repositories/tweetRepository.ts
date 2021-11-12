@@ -3,7 +3,7 @@ import { TweetItem } from '../model/tweetItem';
 import * as AWS from 'aws-sdk';
 
 // Log AWS SDK calls
-AWS.config.logger = console;
+// AWS.config.logger = console;
 
 export class TweetRepository {
     constructor(
