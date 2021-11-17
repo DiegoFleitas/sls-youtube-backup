@@ -1,7 +1,7 @@
-import { middyfy } from "@libs/lambda";
-import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
-import { formatJSONResponse } from "@libs/apiGateway";
-import { TwitterService } from "@libs/twitterService";
+import { middyfy } from "../../libs/lambda";
+import type { ValidatedEventAPIGatewayProxyEvent } from "../../libs/apiGateway";
+import { formatJSONResponse } from "../../libs/apiGateway";
+import { TwitterService } from "../../libs/twitterService";
 import { TweetRepository } from "../../../repositories/tweetRepository";
 import { TweetItem } from "../../../model/TweetItem";
 import * as AWS from "aws-sdk";

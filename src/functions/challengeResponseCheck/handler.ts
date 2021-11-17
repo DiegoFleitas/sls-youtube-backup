@@ -1,6 +1,6 @@
-import { middyfy } from "@libs/lambda";
-import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
-import { formatJSONResponse } from "@libs/apiGateway";
+import { middyfy } from "../../libs/lambda";
+import type { ValidatedEventAPIGatewayProxyEvent } from "../../libs/apiGateway";
+import { formatJSONResponse } from "../../libs/apiGateway";
 import * as crypto from "crypto";
 import { TWITTER_API_KEY_SECRET } from "../../../secrets";
 

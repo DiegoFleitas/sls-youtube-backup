@@ -1,7 +1,7 @@
-import { middyfy } from "@libs/lambda";
-import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
-import { formatJSONResponse } from "@libs/apiGateway";
-import { DiscordService } from "@libs/discordService";
+import { middyfy } from "../../libs/lambda";
+import type { ValidatedEventAPIGatewayProxyEvent } from "../../libs/apiGateway";
+import { formatJSONResponse } from "../../libs/apiGateway";
+import { DiscordService } from "../../libs/discordService";
 import { TweetItem } from "model/tweetItem";
 import { TweetRepository } from "../../../repositories/tweetRepository";
 
