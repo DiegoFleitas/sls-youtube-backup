@@ -1,15 +1,14 @@
-import { DISCORD_AUTHORIZATION_HEADER } from "../../secrets";
+import { DISCORD_AUTHORIZATION_HEADER, DISCORD_CHANNEL_ID } from "../../secrets";
 import axios, { AxiosRequestConfig } from "axios";
 
 export class DiscordService {
   async postMessage(
-    message: string,
-    channelId = "906427104286109746"
+    message: string
   ): Promise<any> {
     message += " @here";
     const options: AxiosRequestConfig<any> = {
       method: "post",
-      url: `https://discordapp.com/api/v6/channels/${channelId}/messages`,
+      url: `https://discordapp.com/api/v6/channels/${DISCORD_CHANNEL_ID}/messages`,
       headers: {
         Authorization: DISCORD_AUTHORIZATION_HEADER,
         "Content-Type": "application/json",
