@@ -87,14 +87,5 @@ functions:
         Action:
         - lambda:InvokeFunction
         Resource: '*'
-  # challengeResponseCheck:
-  #   handler: src/functions/challengeResponseCheck/handler.main
-  #   memorySize: 128 # MB
-  #   timeout: 5 # seconds
-  #   events:
-  #     - http:
-  #         path: sendTweetsToDiscord
-  #         method: GET
-  #         cors: true
 resources:
   - ${file(resources/dynamodb.yml)}
