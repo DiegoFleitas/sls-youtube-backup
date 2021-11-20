@@ -1,5 +1,4 @@
-service:
-  name: serverless-sarambabot
+service: serverless-sarambabot
 frameworkVersion: '2'
 custom:
   esbuild:
