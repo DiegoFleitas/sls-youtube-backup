@@ -26,9 +26,9 @@ provider:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
     REGION: ${self:provider.region}
     TWEETS_TABLE: sb_tweets_test
-    SERVICE_NAME: ${self:service.name}
+    SERVICE_NAME: ${self:service}
     STAGE: ${self:provider.stage}
-    LAMBDA_SEND_TWEETS_TO_DISCORD: ${self:service.name}-${self:provider.stage}-sendTweetsToDiscord
+    LAMBDA_SEND_TWEETS_TO_DISCORD: ${self:service}-${self:provider.stage}-sendTweetsToDiscord
   lambdaHashingVersion: '20201221'
   versionFunctions: true
 package:
