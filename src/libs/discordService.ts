@@ -1,10 +1,11 @@
-import { DISCORD_AUTHORIZATION_HEADER, DISCORD_CHANNEL_ID } from "../../secrets";
+import {
+  DISCORD_AUTHORIZATION_HEADER,
+  DISCORD_CHANNEL_ID,
+} from "../../secrets";
 import axios, { AxiosRequestConfig } from "axios";
 
 export class DiscordService {
-  async postMessage(
-    message: string
-  ): Promise<any> {
+  async postMessage(message: string): Promise<any> {
     message += " @here";
     const options: AxiosRequestConfig<any> = {
       method: "post",
