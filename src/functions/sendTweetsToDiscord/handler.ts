@@ -23,7 +23,11 @@ const sendTweetsToDiscord: ValidatedEventAPIGatewayProxyEvent<any> = async (
     // tweetsToForward.splice(1);
 
     tweetsToForward.forEach(async (tweet) => {
-      await DS.postMessage(tweet.text);
+      const isRetweet = tweet.text.includes("RT @");
+      // don't post retweets
+      if (!isRetweet) {
+        await DS.postMessage(tweet.text);
+      }
       tweet.sent = 1;
       await db.updateTweet(tweet);
     });
