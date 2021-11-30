@@ -17,7 +17,7 @@
     // "strictNullChecks": true,
     "baseUrl": ".",
   },
-  "include": ["src/**/*.ts", "secrets.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "node_modules/**/*",
     ".serverless/**/*",

@@ -2,7 +2,7 @@ Resources:
     TweetsDynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: sb_tweets_test
+        TableName: ${self:provider.environment.TWEETS_TABLE}
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S

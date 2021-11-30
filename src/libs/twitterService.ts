@@ -1,5 +1,4 @@
 import { EventEmitter } from "events";
-import { TWITTER_BEARER_TOKEN } from "../../secrets";
 import axios, { AxiosRequestConfig } from "axios";
 
 export class TwitterService extends EventEmitter {
@@ -11,7 +10,7 @@ export class TwitterService extends EventEmitter {
     const options: AxiosRequestConfig<any> = {
       url: `https://api.twitter.com/2/users/${userId}/tweets?tweet.fields=created_at`,
       headers: {
-        Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
+        Authorization: `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
       },
     };
     return axios

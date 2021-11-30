@@ -1,7 +1,3 @@
-import {
-  DISCORD_AUTHORIZATION_HEADER,
-  DISCORD_CHANNEL_ID,
-} from "../../secrets";
 import axios, { AxiosRequestConfig } from "axios";
 
 export class DiscordService {
@@ -9,9 +5,9 @@ export class DiscordService {
     message += " @here";
     const options: AxiosRequestConfig<any> = {
       method: "post",
-      url: `https://discordapp.com/api/v6/channels/${DISCORD_CHANNEL_ID}/messages`,
+      url: `https://discordapp.com/api/v6/channels/${process.env.DISCORD_CHANNEL_ID}/messages`,
       headers: {
-        Authorization: DISCORD_AUTHORIZATION_HEADER,
+        Authorization: process.env.DISCORD_AUTHORIZATION_HEADER,
         "Content-Type": "application/json",
       },
       data: JSON.stringify({

@@ -17,6 +17,7 @@ out-logger.json
 
 .DS_Store
 
-secrets.*
-
 dist/*
+
+.env.development
+.env.production
