@@ -2,11 +2,11 @@
 
 Quick & dirty Serverless Discord bot that checks a twitter feed every minute & forwards One Piece updates to a specific discord channel
 
-### Try locally
+### Test
 
 ```
-npx sls invoke local -f sendTweetToDiscord
-npx sls invoke local -f getUnsentTweets
+npm run test:pollTwitterFeed
+npm run test:sendTweetsToDiscord
 ```
 
 ### Fix code style
