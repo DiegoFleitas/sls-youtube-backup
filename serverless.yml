@@ -61,12 +61,12 @@ functions:
     events:
       - schedule:
           rate: rate(1 minute)
-          enabled: true
+          # enabled: true
           # enable the cronjob for production only
-          # enabled:
-          #   Fn::Equals:
-          #     - ${self:provider.stage}
-          #     - production
+          enabled:
+            Fn::Equals:
+              - ${self:provider.stage}
+              - production
       # TODO: remove this event
       - http:
           path: pollTwitterFeed
