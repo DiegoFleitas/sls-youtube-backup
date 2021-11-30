@@ -4,7 +4,6 @@
   "description": "Serverless aws-nodejs-typescript template",
   "main": "serverless.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "eslint": "npx eslint ./src/** --fix",
     "deploy:prod": "NODE_ENV=production & npx sls deploy --stage production",
     "deploy:dev": "NODE_ENV=development & npx sls deploy",
