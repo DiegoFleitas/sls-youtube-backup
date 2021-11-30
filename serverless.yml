@@ -3,6 +3,7 @@ service: serverless-sarambabot
 frameworkVersion: '2'
 
 provider:
+  # use dev if no stage is specified
   stage: ${opt:stage, self:custom.defaultStage}
   region: us-east-1
   name: aws
