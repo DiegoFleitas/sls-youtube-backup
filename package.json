@@ -5,7 +5,10 @@
   "main": "serverless.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "eslint": "npx eslint ./src/** --fix"
+    "eslint": "npx eslint ./src/** --fix",
+    "deploy:prod": "NODE_ENV=production & npx sls deploy --stage production",
+    "deploy:dev": "NODE_ENV=development & npx sls deploy",
+    "test-send-tweets-to-discord": "set SLS_DEBUG=* && npx sls --config serverless.yml invoke local --inspect --function sendTweetsToDiscord --path ./mocks/sendTweetsToDiscord.json"
   },
   "engines": {
     "node": ">=14.15.0"
@@ -35,6 +38,7 @@
     "json-schema-to-ts": "^1.5.0",
     "prettier": "^2.4.1",
     "serverless": "^2.23.0",
+    "serverless-dotenv-plugin": "^3.10.0",
     "serverless-esbuild": "^1.17.1",
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-offline": "^8.2.0",

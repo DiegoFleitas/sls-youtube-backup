@@ -1,21 +1,9 @@
 service: serverless-sarambabot
+
 frameworkVersion: '2'
-custom:
-  esbuild:
-    bundle: true
-    minify: false
-    sourcemap: true
-    exclude:
-      - aws-sdk
-    target: node14
-    define: {}
-    platform: node
-plugins:
-  - serverless-esbuild
-  - serverless-iam-roles-per-function       
-  - serverless-offline
+
 provider:
-  stage: dev
+  stage: ${opt:stage, self:custom.defaultStage}
   region: us-east-1
   name: aws
   runtime: nodejs14.x
@@ -25,14 +13,34 @@ provider:
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
     REGION: ${self:provider.region}
-    TWEETS_TABLE: sb_tweets_test
+    TWEETS_TABLE: sb_tweets_${self:provider.stage}
     SERVICE_NAME: ${self:service}
     STAGE: ${self:provider.stage}
     LAMBDA_SEND_TWEETS_TO_DISCORD: ${self:service}-${self:provider.stage}-sendTweetsToDiscord
   lambdaHashingVersion: '20201221'
   versionFunctions: true
+
+plugins:
+  - serverless-esbuild
+  - serverless-iam-roles-per-function       
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+custom:
+  defaultStage: dev
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    exclude:
+      - aws-sdk
+    target: node14
+    define: {}
+    platform: node
+
 package:
   individually: true
+
 functions:
   sendTweetsToDiscord:
     handler: src/functions/sendTweetsToDiscord/handler.main
@@ -46,7 +54,6 @@ functions:
           Fn::GetAtt:
             - TweetsDynamoDBTable
             - Arn
-  # TODO: set up a cronjob to run this function every X mins
   pollTwitterFeed:
     handler: src/functions/pollTwitterFeed/handler.main
     memorySize: 128 # MB
@@ -55,6 +62,12 @@ functions:
       - schedule:
           rate: rate(1 minute)
           enabled: true
+          # enable the cronjob for production only
+          # enabled:
+          #   Fn::Equals:
+          #     - ${self:provider.stage}
+          #     - production
+      # TODO: remove this event
       - http:
           path: pollTwitterFeed
           method: GET
@@ -73,9 +86,11 @@ functions:
         - dynamodb:PutItem
         - dynamodb:Query
         Resource:
+          # dynamodb table arn
           - Fn::GetAtt:
               - TweetsDynamoDBTable
               - Arn
+          # dynamodb indexes arn
           - Fn::Join:
               - /
               - - Fn::GetAtt:
@@ -87,5 +102,6 @@ functions:
         Action:
         - lambda:InvokeFunction
         Resource: '*'
+
 resources:
   - ${file(resources/dynamodb.yml)}
