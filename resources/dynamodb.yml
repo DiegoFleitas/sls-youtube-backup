@@ -2,6 +2,7 @@ Resources:
     TweetsDynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
+        # use a different table for each stage
         TableName: ${self:provider.environment.TWEETS_TABLE}
         AttributeDefinitions:
           - AttributeName: id
