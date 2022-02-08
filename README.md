@@ -19,4 +19,6 @@ npx eslint ./src/** --fix
 
 ![imagen](https://user-images.githubusercontent.com/15369935/141467566-1d295acc-8e6d-49bf-b852-948f36730e40.png)
 
+See also https://s3.amazonaws.com/lambda-tools/pricing-calculator.html
+
 Made with Serverless Framework 
