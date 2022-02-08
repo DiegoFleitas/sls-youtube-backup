@@ -1,6 +1,6 @@
 # Sarambabot
 
-Quick & dirty Serverless Discord bot that checks a twitter feed every minute & forwards One Piece updates to a specific discord channel
+A serverless Discord bot that checks a twitter feed every minute & forwards One Piece updates to a specific discord channel
 
 ### Test
 
