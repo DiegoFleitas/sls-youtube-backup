@@ -1,7 +1,7 @@
 {
   "name": "sarambabot",
   "version": "1.0.0",
-  "description": "Serverless aws-nodejs-typescript template",
+  "description": "Serverless discord bot based off aws-nodejs-typescript template",
   "main": "serverless.ts",
   "scripts": {
     "eslint": "npx eslint ./src/** --fix",
