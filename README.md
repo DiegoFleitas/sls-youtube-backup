@@ -2,7 +2,7 @@
 
 A serverless Discord bot that checks a twitter feed every minute* & forwards One Piece updates to a specific discord channel
 
-(*) Why every minute? Because AFAIK Twitter charges you for using better methods! lol
+(*) Why every minute? Because AFAIK Twitter charges you if you wanna use better methods! lol
 
 ![imagen](https://user-images.githubusercontent.com/15369935/153233333-fe0b04e5-a65c-4206-9709-578434c4605d.png)
 
