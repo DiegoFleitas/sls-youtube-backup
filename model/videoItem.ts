@@ -1,7 +1,7 @@
-export interface TweetItem {
+export interface VideoItem {
   id: string;
-  text: string;
-  sent: Boolean;
+  title: string;
+  backedUp: Boolean;
   createdAt: string;
 }
 

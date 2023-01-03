@@ -1,16 +1,16 @@
 import { EventEmitter } from "events";
 import axios, { AxiosRequestConfig } from "axios";
 
-export class TwitterService extends EventEmitter {
-  emitNewTweet(data) {
-    this.emit("new-tweet", data);
+export class YoutubeService extends EventEmitter {
+  emitNewVideo(data) {
+    this.emit("new-video", data);
   }
 
-  async getTweets(userId = "882945467881074688"): Promise<any> {
+  async getVideos(userId = "882945467881074688"): Promise<any> {
     const options: AxiosRequestConfig<any> = {
-      url: `https://api.twitter.com/2/users/${userId}/tweets?tweet.fields=created_at`,
+      url: `https://api.youtube.com/2/users/${userId}/videos?video.fields=created_at`,
       headers: {
-        Authorization: `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+        Authorization: `Bearer ${process.env.YOUTUBE_DATA_API_KEY}`,
       },
     };
     return axios
