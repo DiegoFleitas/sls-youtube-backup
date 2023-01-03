@@ -1,7 +1,7 @@
 {
-  "name": "sarambabot",
+  "name": "sls-youtube-backup",
   "version": "1.0.0",
-  "description": "Serverless discord bot based off aws-nodejs-typescript template",
+  "description": "Serverless youtube playlist backup based of aws-nodejs-typescript template",
   "main": "serverless.ts",
   "scripts": {
     "eslint": "npx eslint ./src/** --fix",
@@ -9,8 +9,8 @@
     "deploy:dev": "NODE_ENV=development & npx sls deploy",
     "remove:prod": "NODE_ENV=production & npx sls remove --stage production",
     "remove:dev": "NODE_ENV=development & npx sls remove",
-    "test:pollTwitterFeed": "set SLS_DEBUG=* && npx sls --config serverless.yml invoke local --inspect --function pollTwitterFeed",
-    "test:sendTweetsToDiscord": "set SLS_DEBUG=* && npx sls --config serverless.yml invoke local --inspect --function sendTweetsToDiscord --path ./src/mocks/sendTweetsToDiscord.json"
+    "test:backupVideos": "set SLS_DEBUG=* && npx sls --config serverless.yml invoke local --inspect --function backupVideos",
+    "test:queuePlaylistBackup": "set SLS_DEBUG=* && npx sls --config serverless.yml invoke local --inspect --function queuePlaylistBackup --path ./src/mocks/queuePlaylistBackup.json"
   },
   "engines": {
     "node": ">=14.15.0"
@@ -18,6 +18,7 @@
   "dependencies": {
     "@middy/core": "^1.5.2",
     "@middy/http-json-body-parser": "^1.5.2",
+    "aws-sdk": "^2.1286.0",
     "body-parser": "^1.19.0",
     "source-map-support": "^0.5.20"
   },
@@ -29,6 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^5.3.1",
     "@typescript-eslint/parser": "^5.3.1",
     "axios": "^0.24.0",
+    "esbuild": "^0.16.13",
     "eslint": "^8.2.0",
     "eslint-plugin-prettier": "^4.0.0",
     "json-schema-to-ts": "^1.5.0",
@@ -36,7 +38,7 @@
     "serverless": "^2.23.0",
     "serverless-dotenv-plugin": "^3.10.0",
     "serverless-esbuild": "^1.17.1",
-    "serverless-iam-roles-per-function": "^3.2.0",
+    "serverless-lift": "^1.21.0",
     "serverless-offline": "^8.2.0",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",

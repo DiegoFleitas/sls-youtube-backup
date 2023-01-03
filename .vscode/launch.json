@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug pollTwitterFeed Function",
+            "name": "Debug backupVideos Function",
             "type": "node",
             "request": "launch",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/sls.cmd",
-            "runtimeArgs": ["invoke", "local", "-f", "pollTwitterFeed", "--data", "{}"],
+            "runtimeArgs": ["invoke", "local", "-f", "backupVideos", "--data", "{}"],
             "console": "integratedTerminal",
             "skipFiles": ["<node_internals>/**"]
         }

@@ -1,6 +1,6 @@
-service: serverless-sarambabot
+service: sls-youtube-backup
 
-frameworkVersion: '2'
+frameworkVersion: "2"
 
 provider:
   # use dev if no stage is specified
@@ -10,22 +10,20 @@ provider:
   runtime: nodejs14.x
   apiGateway:
     minimumCompressionSize: 1024
-    shouldStartNameWithService: true        
+    shouldStartNameWithService: true
   environment:
-    AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
     REGION: ${self:provider.region}
-    TWEETS_TABLE: sb_tweets_${self:provider.stage}
     SERVICE_NAME: ${self:service}
     STAGE: ${self:provider.stage}
-    LAMBDA_SEND_TWEETS_TO_DISCORD: ${self:service}-${self:provider.stage}-sendTweetsToDiscord
-  lambdaHashingVersion: '20201221'
+  lambdaHashingVersion: "20201221"
   versionFunctions: true
 
 plugins:
   - serverless-esbuild
-  - serverless-iam-roles-per-function       
   - serverless-offline
   - serverless-dotenv-plugin
+  - serverless-lift
 
 custom:
   defaultStage: dev
@@ -46,63 +44,29 @@ custom:
 package:
   individually: true
 
+constructs:
+  video-backup-queue:
+    type: queue
+    worker:
+      handler: src/functions/queuePlaylistBackup/handler.main
+
 functions:
-  sendTweetsToDiscord:
-    handler: src/functions/sendTweetsToDiscord/handler.main
+  queuePlaylistBackup:
+    handler: src/functions/queuePlaylistBackup/handler.main
+    environment:
+      SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
     memorySize: 128 # MB
     timeout: 5 # seconds
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-        - dynamodb:UpdateItem
-        Resource:
-          Fn::GetAtt:
-            - TweetsDynamoDBTable
-            - Arn
-  pollTwitterFeed:
-    handler: src/functions/pollTwitterFeed/handler.main
+
+  backupVideos:
+    handler: src/functions/backupVideos/handler.main
+    environment:
+      SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
     memorySize: 128 # MB
     timeout: 5 # seconds
     events:
-      - schedule:
-          rate: rate(1 minute)
-          # enable the cronjob for production only
-          enabled: ${self:custom.enabled.${self:provider.stage}, self.enabled.other}
       # TODO: remove this event
       - http:
-          path: pollTwitterFeed
+          path: backupVideos
           method: GET
           cors: true
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-        - dynamodb:PutItem
-        - dynamodb:Query
-        Resource:
-          Fn::GetAtt:
-            - TweetsDynamoDBTable
-            - Arn
-      - Effect: Allow
-        Action:
-        - dynamodb:PutItem
-        - dynamodb:Query
-        Resource:
-          # dynamodb table arn
-          - Fn::GetAtt:
-              - TweetsDynamoDBTable
-              - Arn
-          # dynamodb indexes arn
-          - Fn::Join:
-              - /
-              - - Fn::GetAtt:
-                    - TweetsDynamoDBTable
-                    - Arn
-                - index
-                - TweetSent-index
-      - Effect: Allow
-        Action:
-        - lambda:InvokeFunction
-        Resource: '*'
-
-resources:
-  - ${file(resources/dynamodb.yml)}
