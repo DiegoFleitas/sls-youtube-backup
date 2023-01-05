@@ -1,27 +1,14 @@
 import axios from "axios";
-import { SQS } from "aws-sdk";
 import { middyfy } from "../../libs/lambda";
 import { formatJSONResponse } from "../../libs/apiGateway";
+import { getSQSMessages } from "../../libs/sqs";
 
 const waybackAPI = "https://web.archive.org/save/";
 const youtubeAPI = "https://www.googleapis.com/youtube/v3/videos?id=";
 
-const sqs = new SQS({ region: "us-east-1" });
-
-const backupVideos = async () => {
+const backupVideos = async (event) => {
   try {
-    const queueResponse = await sqs
-      .receiveMessage({
-        QueueUrl: process.env.SQS_QUEUE_URL,
-        MaxNumberOfMessages: 10,
-      })
-      .promise();
-
-    if (!queueResponse?.Messages) {
-      return formatJSONResponse({
-        message: "No videos to backup",
-      });
-    }
+    const queueResponse = await getSQSMessages(event);
 
     const videoIds = queueResponse.Messages.map((message: any) => message.Body);
 
@@ -29,13 +16,19 @@ const backupVideos = async () => {
       const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
       const waybackUrl = `${waybackAPI}${youtubeUrl}`;
 
-      const youtubeResponse = await axios.get(youtubeAPI);
+      const youtubeResponse = await axios.get(
+        `${youtubeAPI}${videoId}&key=${process.env.YOUTUBE_DATA_API_KEY}`
+      );
       if (youtubeResponse.data.items.length < 0) {
         console.error(`Video with ID ${videoId} not found`);
       }
 
       // video exists, proceed with backup
-      const waybackResponse = await axios.get(waybackUrl);
+      const waybackResponse = await axios.get(waybackUrl, {
+        headers: {
+          authorization: `LOW ${process.env.WAYBACK_MACHINE_API_KEY}`,
+        },
+      });
       if (waybackResponse.status !== 200) {
         return formatJSONResponse({
           status: 500,

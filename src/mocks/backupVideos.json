@@ -1,0 +1,22 @@
+{
+  "Messages": [
+    {
+      "MessageId": "b67e3a5e-f1c8-45b3-b1c2-f5f1d0bcc63b",
+      "ReceiptHandle": "AQEBj2M1YjEzYTYyMjg5NGYwMDAwMDAwMDAwMDAwMDAwMDAwMjI=",
+      "MD5OfBody": "d41d8cd98f00b204e9800998ecf8427e",
+      "Body": "shF8Sv-OswM"
+    },
+    {
+      "MessageId": "8dfcb75d-4c4a-47a0-b8e7-44a1c2f7f049",
+      "ReceiptHandle": "AQEBj2M1YjEzYTYyMjg5NGYwMDAwMDAwMDAwMDAwMDAwMDAwMzM=",
+      "MD5OfBody": "d41d8cd98f00b204e9800998ecf8427e",
+      "Body": "bK6RpEbN3uI"
+    },
+    {
+      "MessageId": "89sd08as-4c4a-47a0-b8e7-879das67asd5",
+      "ReceiptHandle": "AQEBj2M1YjEzYTYyMjg5NGYwMDAwMDAwMDAwMDAwMDAwMDAwMzM=",
+      "MD5OfBody": "d41d8cd98f00b204e9800998ecf8427e",
+      "Body": "73Q8kNsnS7Q"
+    }
+  ]
+}
