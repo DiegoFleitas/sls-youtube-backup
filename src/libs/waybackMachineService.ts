@@ -41,7 +41,7 @@ export class WaybackMachineService {
     // FIXME: this doesn't work
     const deletedVideosList = [];
     deletedVideosList.forEach((vid, key) => {
-      let promise = new Promise((resolve, reject) => {
+      const promise = new Promise((resolve, reject) => {
         // recover video title
         const titleUrl = `${WBMACHINE_BASEURL}${vid.link}`;
         console.log(titleUrl);

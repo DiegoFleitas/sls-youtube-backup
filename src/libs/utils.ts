@@ -63,10 +63,10 @@ export function parseTitleWBM(body) {
   // const a = '[Deleted video] #'+ key + '.txt'
   // let b = path.join('assets/recovered/', a)
   // let c = fs.writeFileSync(b, body)
-  let regExps = ['"title":"(.*?)"', "<title.*?>(.*?)</title>"];
+  const regExps = ['"title":"(.*?)"', "<title.*?>(.*?)</title>"];
   for (let i = 0; i < regExps.length; i++) {
-    let regex = new RegExp(regExps[i], "g");
-    let titleMatch = regex.exec(body);
+    const regex = new RegExp(regExps[i], "g");
+    const titleMatch = regex.exec(body);
     if (titleMatch && titleMatch.length > 0) {
       console.log(titleMatch);
       filename = titleMatch[1];

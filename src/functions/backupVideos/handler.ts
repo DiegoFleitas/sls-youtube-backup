@@ -3,8 +3,8 @@ import { SQS } from "aws-sdk";
 import { middyfy } from "../../libs/lambda";
 import { formatJSONResponse } from "../../libs/apiGateway";
 
-const waybackAPI: string = "https://web.archive.org/save/";
-const youtubeAPI: string = "https://www.googleapis.com/youtube/v3/videos?id=";
+const waybackAPI = "https://web.archive.org/save/";
+const youtubeAPI = "https://www.googleapis.com/youtube/v3/videos?id=";
 
 const sqs = new SQS({ region: "us-east-1" });
 
@@ -26,8 +26,8 @@ const backupVideos = async () => {
     const videoIds = queueResponse.Messages.map((message: any) => message.Body);
 
     for (const videoId of videoIds) {
-      const youtubeUrl: string = `https://www.youtube.com/watch?v=${videoId}`;
-      const waybackUrl: string = `${waybackAPI}${youtubeUrl}`;
+      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      const waybackUrl = `${waybackAPI}${youtubeUrl}`;
 
       const youtubeResponse = await axios.get(youtubeAPI);
       if (youtubeResponse.data.items.length < 0) {
