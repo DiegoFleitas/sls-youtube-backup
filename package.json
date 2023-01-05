@@ -9,7 +9,7 @@
     "deploy:dev": "NODE_ENV=development & npx sls deploy",
     "remove:prod": "NODE_ENV=production & npx sls remove --stage production",
     "remove:dev": "NODE_ENV=development & npx sls remove",
-    "test:backupVideos": "set SLS_DEBUG=* && npx sls --config serverless.yml invoke local --inspect --function backupVideos",
+    "test:backupVideos": "set SLS_DEBUG=* && npx sls --config serverless.yml invoke local --inspect --function backupVideos --path ./src/mocks/backupVideos.json",
     "test:queuePlaylistBackup": "set SLS_DEBUG=* && npx sls --config serverless.yml invoke local --inspect --function queuePlaylistBackup --path ./src/mocks/queuePlaylistBackup.json"
   },
   "engines": {
