@@ -20,7 +20,10 @@ const backupVideos = async (event) => {
         `${youtubeAPI}${videoId}&key=${process.env.YOUTUBE_DATA_API_KEY}`
       );
       if (youtubeResponse.data.items.length < 0) {
-        console.error(`Video with ID ${videoId} not found`);
+        return formatJSONResponse({
+          status: 500,
+          message: `Video with ID ${videoId} not found`,
+        });
       }
 
       // video exists, check if backup exists too
