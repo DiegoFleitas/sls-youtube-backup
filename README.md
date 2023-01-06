@@ -1,4 +1,4 @@
-A serverless application that backups a youtube playlist into the wayback machine
+A serverless application to backup a youtube playlist into the wayback machine
 
 ## Before starting
 
