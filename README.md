@@ -1,5 +1,3 @@
-# Sarambabot
-
 A serverless application that backups a youtube playlist into the wayback machine
 
 # Before starting
