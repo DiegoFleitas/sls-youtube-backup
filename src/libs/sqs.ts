@@ -10,7 +10,7 @@ export async function getSQSMessages(event) {
   return sqs
     .receiveMessage({
       QueueUrl: process.env.SQS_QUEUE_URL,
-      MaxNumberOfMessages: 10,
+      MaxNumberOfMessages: 1,
     })
     .promise();
 }
