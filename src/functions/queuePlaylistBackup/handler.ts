@@ -2,6 +2,7 @@ import axios from "axios";
 import * as AWS from "aws-sdk";
 import { middyfy } from "../../libs/lambda";
 import { formatJSONResponse } from "../../libs/apiGateway";
+import { sendSQSMessage } from "../../libs/sqs";
 
 const sqs = new AWS.SQS();
 
@@ -30,11 +31,7 @@ const queuePlaylistBackup = async (event) => {
 
     // Send each video ID to the SQS queue as a separate message
     for (const videoId of videoIds) {
-      const params = {
-        QueueUrl: process.env.SQS_QUEUE_URL,
-        MessageBody: videoId,
-      };
-      await sqs.sendMessage(params).promise();
+      await sendSQSMessage(videoId);
     }
 
     // Return the array of video IDs
