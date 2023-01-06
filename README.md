@@ -34,3 +34,6 @@ npm run remove:dev
 ```
 
 ## Other
+
+- [Wayback Machine - Get Your S3-Like API Keys](https://archive.org/account/s3.php)
+- [Youtube Data API Reference](https://developers.google.com/youtube/v3/docs)
