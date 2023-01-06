@@ -5,10 +5,17 @@ import { formatJSONResponse } from "../../libs/apiGateway";
 
 const sqs = new AWS.SQS();
 
-const queuePlaylistBackup = async (event: { playlistId: string }) => {
+const queuePlaylistBackup = async (event) => {
   try {
     // Extract the playlist ID from the event data
-    const playlistId = event.playlistId;
+    const playlistId = event?.body?.playlistId;
+    if (!playlistId) {
+      console.log(event);
+      return formatJSONResponse({
+        statusCode: 400,
+        message: "No playlist ID provided",
+      });
+    }
 
     // Build the URL for the playlist API endpoint
     const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&key=${process.env.YOUTUBE_DATA_API_KEY}`;
