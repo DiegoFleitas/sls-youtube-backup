@@ -27,7 +27,7 @@ plugins:
 
 custom:
   defaultStage: dev
-  enabled:
+  enableCron:
     dev: false
     production: true
     other: false
@@ -57,6 +57,16 @@ functions:
       SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
     memorySize: 128 # MB
     timeout: 5 # seconds
+    events:
+      - http:
+          path: queuePlaylistBackup
+          method: POST
+          cors: true
+          # enable the event for dev only
+          condition:
+            equals:
+              - "${self:provider.stage}"
+              - "dev"
 
   backupVideos:
     handler: src/functions/backupVideos/handler.main
@@ -64,9 +74,9 @@ functions:
       SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
     memorySize: 128 # MB
     timeout: 5 # seconds
+    # TODO: might be a better way to do this
     events:
-      # TODO: remove this event
-      - http:
-          path: backupVideos
-          method: GET
-          cors: true
+      - schedule:
+          rate: rate(1 minute)
+          # enable the cronjob for production only
+          enabled: ${self:custom.enableCron.${self:provider.stage}, self.enableCron.other}
