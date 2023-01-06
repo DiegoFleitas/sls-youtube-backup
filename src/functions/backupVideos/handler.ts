@@ -23,20 +23,29 @@ const backupVideos = async (event) => {
         console.error(`Video with ID ${videoId} not found`);
       }
 
-      // video exists, proceed with backup
+      // video exists, check if backup exists too
+      const checkUrl = `https://web.archive.org/web/20130720113437oe_/http://wayback-fakeurl.archive.org/yt/${videoId}`;
+      const waybackCheckResponse = await axios.get(checkUrl);
+      if (waybackCheckResponse.status == 200) {
+        return formatJSONResponse({
+          status: 200,
+          message: `Video has been backed up to the Wayback Machine already: ${checkUrl}`,
+        });
+      }
+
+      // video exists & backup doesn't, proceed to backup
       const waybackResponse = await axios.get(waybackUrl, {
         headers: {
-          authorization: `LOW ${process.env.WAYBACK_MACHINE_API_KEY}`,
+          Authorization: `LOW ${process.env.WAYBACK_MACHINE_API_KEY}`,
         },
       });
       if (waybackResponse.status !== 200) {
+        console.log(waybackResponse);
         return formatJSONResponse({
           status: 500,
           message: `Error backing up ${youtubeUrl} to the Wayback Machine`,
         });
       }
-
-      console.log(waybackResponse);
 
       return formatJSONResponse({
         status: 500,
