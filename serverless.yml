@@ -30,7 +30,6 @@ custom:
   enableCron:
     dev: false
     production: true
-    other: false
   esbuild:
     bundle: true
     minify: false
@@ -57,16 +56,12 @@ functions:
       SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
     memorySize: 128 # MB
     timeout: 5 # seconds
+    # TODO: remove this event
     events:
       - http:
           path: queuePlaylistBackup
           method: POST
           cors: true
-          # enable the event for dev only
-          condition:
-            equals:
-              - "${self:provider.stage}"
-              - "dev"
 
   backupVideos:
     handler: src/functions/backupVideos/handler.main
@@ -79,4 +74,4 @@ functions:
       - schedule:
           rate: rate(1 minute)
           # enable the cronjob for production only
-          enabled: ${self:custom.enableCron.${self:provider.stage}, self.enableCron.other}
+          enabled: ${self:custom.enableCron.${self:provider.stage}, false}
