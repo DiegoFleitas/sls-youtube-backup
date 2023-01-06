@@ -1,6 +1,6 @@
 A serverless application that backups a youtube playlist into the wayback machine
 
-# Before starting
+## Before starting
 
 You'll need to:
 
