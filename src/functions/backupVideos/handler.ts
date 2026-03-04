@@ -18,9 +18,16 @@ const backupVideos = async (
   try {
     const queueResponse = await getSQSMessages(event);
 
-    if (!queueResponse || !("Messages" in queueResponse) || !queueResponse.Messages) {
+    if (
+      !queueResponse ||
+      !("Messages" in queueResponse) ||
+      !queueResponse.Messages
+    ) {
       console.log(queueResponse);
-      const result: BackupResult = { status: "error", message: "No messages found in queue" };
+      const result: BackupResult = {
+        status: "error",
+        message: "No messages found in queue",
+      };
       console.log(result);
       return result;
     }

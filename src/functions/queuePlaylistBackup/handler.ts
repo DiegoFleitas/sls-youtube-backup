@@ -15,10 +15,7 @@ const queuePlaylistBackup = async (event: APIGatewayProxyEvent) => {
     const playlistId = body?.playlistId;
     if (!playlistId) {
       console.log(event);
-      return formatJSONResponse(
-        { message: "No playlist ID provided" },
-        400
-      );
+      return formatJSONResponse({ message: "No playlist ID provided" }, 400);
     }
 
     // Build the URL for the playlist API endpoint
@@ -43,10 +40,7 @@ const queuePlaylistBackup = async (event: APIGatewayProxyEvent) => {
     });
   } catch (err) {
     console.error(err);
-    return formatJSONResponse(
-      { message: "Internal server error" },
-      500
-    );
+    return formatJSONResponse({ message: "Internal server error" }, 500);
   }
 };
 
