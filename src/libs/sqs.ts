@@ -30,7 +30,7 @@ export async function getSQSMessages(
   const result = await client.send(
     new ReceiveMessageCommand({
       QueueUrl: queueUrl,
-      MaxNumberOfMessages: 1,
+      MaxNumberOfMessages: 10,
     })
   );
   return result;

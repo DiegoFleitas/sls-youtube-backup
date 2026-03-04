@@ -8,6 +8,11 @@ interface YouTubePlaylistItem {
   snippet: { resourceId: { videoId: string } };
 }
 
+interface PlaylistItemsResponse {
+  items: YouTubePlaylistItem[];
+  nextPageToken?: string;
+}
+
 const queuePlaylistBackup = async (event: APIGatewayProxyEvent) => {
   try {
     // Extract the playlist ID from the event data
@@ -18,16 +23,28 @@ const queuePlaylistBackup = async (event: APIGatewayProxyEvent) => {
       return formatJSONResponse({ message: "No playlist ID provided" }, 400);
     }
 
-    // Build the URL for the playlist API endpoint
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&key=${process.env.YOUTUBE_DATA_API_KEY}`;
+    const apiKey = process.env.YOUTUBE_DATA_API_KEY;
+    const videoIds: string[] = [];
+    let pageToken: string | undefined;
 
-    // Make an HTTPS GET request to the URL using Axios
-    const response = await axios.get(url);
+    // Paginate: fetch up to 50 items per request (1 quota unit per page)
+    do {
+      const params = new URLSearchParams({
+        part: "snippet",
+        playlistId,
+        maxResults: "50",
+        key: apiKey ?? "",
+      });
+      if (pageToken) params.set("pageToken", pageToken);
+      const url = `https://www.googleapis.com/youtube/v3/playlistItems?${params.toString()}`;
+      const response = await axios.get<PlaylistItemsResponse>(url);
 
-    // Extract the video IDs from the response data
-    const videoIds = (response.data.items as YouTubePlaylistItem[]).map(
-      (item) => item.snippet.resourceId.videoId
-    );
+      const pageIds = (response.data.items ?? []).map(
+        (item) => item.snippet.resourceId.videoId
+      );
+      videoIds.push(...pageIds);
+      pageToken = response.data.nextPageToken;
+    } while (pageToken);
 
     // Send each video ID to the SQS queue as a separate message
     for (const videoId of videoIds) {
