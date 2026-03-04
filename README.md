@@ -15,10 +15,11 @@ npm run test:backupVideos
 npm run test:queuePlaylistBackup
 ```
 
-## Fixing code style
+## Linting
 
 ```
-npx eslint ./src/** --fix
+npm run lint        # check only
+npm run lint:fix    # check and fix
 ```
 
 ## Deploying
