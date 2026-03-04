@@ -37,8 +37,8 @@ importers:
         specifier: ^27.5.2
         version: 27.5.2
       '@types/node':
-        specifier: ^14.17.33
-        version: 14.18.63
+        specifier: ^20.0.0
+        version: 20.19.35
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.3.1
         version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@4.9.5))(eslint@8.57.1)(typescript@4.9.5)
@@ -71,19 +71,19 @@ importers:
         version: 2.8.8
       serverless:
         specifier: ^3.0.0
-        version: 3.40.0(@types/node@14.18.63)
+        version: 3.40.0(@types/node@20.19.35)
       serverless-dotenv-plugin:
         specifier: ^3.10.0
-        version: 3.12.2(serverless@3.40.0(@types/node@14.18.63))
+        version: 3.12.2(serverless@3.40.0(@types/node@20.19.35))
       serverless-esbuild:
         specifier: ^1.17.1
         version: 1.57.0(esbuild@0.16.17)
       serverless-lift:
         specifier: ^1.21.0
-        version: 1.34.3(@types/node@14.18.63)(serverless@3.40.0(@types/node@14.18.63))
+        version: 1.34.3(@types/node@20.19.35)(serverless@3.40.0(@types/node@20.19.35))
       serverless-offline:
         specifier: ^8.2.0
-        version: 8.8.1(serverless@3.40.0(@types/node@14.18.63))
+        version: 8.8.1(serverless@3.40.0(@types/node@20.19.35))
       ts-jest:
         specifier: ^27.1.5
         version: 27.1.5(@babel/core@7.29.0)(@types/jest@27.5.2)(babel-jest@27.5.1(@babel/core@7.29.0))(esbuild@0.16.17)(jest@27.5.1(ts-node@9.1.1(typescript@4.9.5)))(typescript@4.9.5)
@@ -1274,8 +1274,8 @@ packages:
   '@types/lodash@4.17.24':
     resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
-  '@types/node@14.18.63':
-    resolution: {integrity: sha512-fAtCfv4jJg+ExtXhvCkCqUKZ+4ok/JQk01qDKhL5BDDoS3AxKXhV5/MAVUZyQnSEd2GT92fkgZl0pz0Q0AzcIQ==}
+  '@types/node@20.19.35':
+    resolution: {integrity: sha512-Uarfe6J91b9HAUXxjvSOdiO2UPOKLm07Q1oh0JHxoZ1y8HoqxDAu3gVrsrOHeiio0kSsoVBt4wFrKOm0dKxVPQ==}
 
   '@types/prettier@2.7.3':
     resolution: {integrity: sha512-+68kP9yzs4LMp7VNh8gdzMSPZFL44MLGqiHWvttYJe+6qnuVr4Ek9wSBQoveqY/r+LwjCcU29kNVkidwim+kYA==}
@@ -4297,6 +4297,9 @@ packages:
   unbzip2-stream@1.4.3:
     resolution: {integrity: sha512-mlExGW4w71ebDJviH16lQLtZS32VKqsSfk80GCfUlwT/4/hNRFsoscrF/c++9xinkMzECL1uL9DDwXqFWkruPg==}
 
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+
   undici@6.23.0:
     resolution: {integrity: sha512-VfQPToRA5FZs/qJxLIinmU59u0r7LXqoJkCzinq3ckNJp3vKEh7jTWN589YQ5+aoAC/TGRLyJLCPKcLQbM8r9g==}
     engines: {node: '>=18.17'}
@@ -5863,12 +5866,12 @@ snapshots:
 
   '@humanwhocodes/object-schema@2.0.3': {}
 
-  '@inquirer/external-editor@1.0.3(@types/node@14.18.63)':
+  '@inquirer/external-editor@1.0.3(@types/node@20.19.35)':
     dependencies:
       chardet: 2.1.1
       iconv-lite: 0.7.2
     optionalDependencies:
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
 
   '@istanbuljs/load-nyc-config@1.1.0':
     dependencies:
@@ -5883,7 +5886,7 @@ snapshots:
   '@jest/console@27.5.1':
     dependencies:
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       chalk: 4.1.2
       jest-message-util: 27.5.1
       jest-util: 27.5.1
@@ -5896,7 +5899,7 @@ snapshots:
       '@jest/test-result': 27.5.1
       '@jest/transform': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.8.1
@@ -5930,14 +5933,14 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       jest-mock: 27.5.1
 
   '@jest/fake-timers@27.5.1':
     dependencies:
       '@jest/types': 27.5.1
       '@sinonjs/fake-timers': 8.1.0
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       jest-message-util: 27.5.1
       jest-mock: 27.5.1
       jest-util: 27.5.1
@@ -5955,7 +5958,7 @@ snapshots:
       '@jest/test-result': 27.5.1
       '@jest/transform': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       chalk: 4.1.2
       collect-v8-coverage: 1.0.3
       exit: 0.1.2
@@ -6024,7 +6027,7 @@ snapshots:
     dependencies:
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       '@types/yargs': 16.0.11
       chalk: 4.1.2
 
@@ -6144,13 +6147,13 @@ snapshots:
       '@parcel/watcher-win32-ia32': 2.5.6
       '@parcel/watcher-win32-x64': 2.5.6
 
-  '@serverless/dashboard-plugin@7.2.3(@types/node@14.18.63)(supports-color@8.1.1)':
+  '@serverless/dashboard-plugin@7.2.3(@types/node@20.19.35)(supports-color@8.1.1)':
     dependencies:
       '@aws-sdk/client-cloudformation': 3.1002.0
       '@aws-sdk/client-sts': 3.1002.0
       '@serverless/event-mocks': 1.1.1
       '@serverless/platform-client': 4.5.1(supports-color@8.1.1)
-      '@serverless/utils': 6.15.0(@types/node@14.18.63)
+      '@serverless/utils': 6.15.0(@types/node@20.19.35)
       child-process-ext: 3.0.2
       chokidar: 3.6.0
       flat: 5.0.2
@@ -6208,7 +6211,7 @@ snapshots:
 
   '@serverless/typescript@3.38.0': {}
 
-  '@serverless/utils@6.15.0(@types/node@14.18.63)':
+  '@serverless/utils@6.15.0(@types/node@20.19.35)':
     dependencies:
       archive-type: 4.0.0
       chalk: 4.1.2
@@ -6224,7 +6227,7 @@ snapshots:
       filenamify: 4.3.0
       get-stream: 6.0.1
       got: 11.8.6
-      inquirer: 8.2.7(@types/node@14.18.63)
+      inquirer: 8.2.7(@types/node@20.19.35)
       js-yaml: 4.1.1
       jwt-decode: 3.1.2
       lodash: 4.17.23
@@ -6631,22 +6634,22 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
 
   '@types/cacheable-request@6.0.3':
     dependencies:
       '@types/http-cache-semantics': 4.2.0
       '@types/keyv': 3.1.4
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       '@types/responselike': 1.0.3
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
 
   '@types/graceful-fs@4.1.9':
     dependencies:
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
 
   '@types/http-cache-semantics@4.2.0': {}
 
@@ -6673,17 +6676,19 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
 
   '@types/lodash@4.17.24': {}
 
-  '@types/node@14.18.63': {}
+  '@types/node@20.19.35':
+    dependencies:
+      undici-types: 6.21.0
 
   '@types/prettier@2.7.3': {}
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
 
   '@types/retry@0.12.0': {}
 
@@ -8334,9 +8339,9 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  inquirer@8.2.7(@types/node@14.18.63):
+  inquirer@8.2.7(@types/node@20.19.35):
     dependencies:
-      '@inquirer/external-editor': 1.0.3(@types/node@14.18.63)
+      '@inquirer/external-editor': 1.0.3(@types/node@20.19.35)
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       cli-cursor: 3.1.0
@@ -8563,7 +8568,7 @@ snapshots:
       '@jest/environment': 27.5.1
       '@jest/test-result': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       chalk: 4.1.2
       co: 4.6.0
       dedent: 0.7.0
@@ -8661,7 +8666,7 @@ snapshots:
       '@jest/environment': 27.5.1
       '@jest/fake-timers': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       jest-mock: 27.5.1
       jest-util: 27.5.1
       jsdom: 16.7.0
@@ -8676,7 +8681,7 @@ snapshots:
       '@jest/environment': 27.5.1
       '@jest/fake-timers': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       jest-mock: 27.5.1
       jest-util: 27.5.1
 
@@ -8686,7 +8691,7 @@ snapshots:
     dependencies:
       '@jest/types': 27.5.1
       '@types/graceful-fs': 4.1.9
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -8705,7 +8710,7 @@ snapshots:
       '@jest/source-map': 27.5.1
       '@jest/test-result': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       chalk: 4.1.2
       co: 4.6.0
       expect: 27.5.1
@@ -8748,7 +8753,7 @@ snapshots:
   jest-mock@27.5.1:
     dependencies:
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
 
   jest-pnp-resolver@1.2.3(jest-resolve@27.5.1):
     optionalDependencies:
@@ -8784,7 +8789,7 @@ snapshots:
       '@jest/test-result': 27.5.1
       '@jest/transform': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       chalk: 4.1.2
       emittery: 0.8.1
       graceful-fs: 4.2.11
@@ -8835,7 +8840,7 @@ snapshots:
 
   jest-serializer@27.5.1:
     dependencies:
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       graceful-fs: 4.2.11
 
   jest-snapshot@27.5.1:
@@ -8868,7 +8873,7 @@ snapshots:
   jest-util@27.5.1:
     dependencies:
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -8887,7 +8892,7 @@ snapshots:
     dependencies:
       '@jest/test-result': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       jest-util: 27.5.1
@@ -8895,7 +8900,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -9760,12 +9765,12 @@ snapshots:
       tslib: 2.8.1
       upper-case-first: 2.0.2
 
-  serverless-dotenv-plugin@3.12.2(serverless@3.40.0(@types/node@14.18.63)):
+  serverless-dotenv-plugin@3.12.2(serverless@3.40.0(@types/node@20.19.35)):
     dependencies:
       chalk: 4.1.2
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      serverless: 3.40.0(@types/node@14.18.63)
+      serverless: 3.40.0(@types/node@20.19.35)
 
   serverless-esbuild@1.57.0(esbuild@0.16.17):
     dependencies:
@@ -9790,27 +9795,27 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  serverless-lift@1.34.3(@types/node@14.18.63)(serverless@3.40.0(@types/node@14.18.63)):
+  serverless-lift@1.34.3(@types/node@20.19.35)(serverless@3.40.0(@types/node@20.19.35)):
     dependencies:
       aws-cdk-lib: 2.241.0(constructs@10.2.20)
       chalk: 4.1.2
       change-case: 4.1.2
       cidr-split: 0.1.2
       constructs: 10.2.20
-      inquirer: 8.2.7(@types/node@14.18.63)
+      inquirer: 8.2.7(@types/node@20.19.35)
       js-yaml: 3.14.2
       lodash: 4.17.23
       mime-types: 2.1.35
       ora: 5.4.1
       pascal-case: 3.1.2
-      serverless: 3.40.0(@types/node@14.18.63)
+      serverless: 3.40.0(@types/node@20.19.35)
       stripe: 8.222.0
       toml: 3.0.0
       traverse: 0.6.11
     transitivePeerDependencies:
       - '@types/node'
 
-  serverless-offline@8.8.1(serverless@3.40.0(@types/node@14.18.63)):
+  serverless-offline@8.8.1(serverless@3.40.0(@types/node@20.19.35)):
     dependencies:
       '@hapi/boom': 9.1.4
       '@hapi/h2o2': 9.1.0
@@ -9834,7 +9839,7 @@ snapshots:
       p-queue: 6.6.2
       p-retry: 4.6.2
       semver: 7.7.4
-      serverless: 3.40.0(@types/node@14.18.63)
+      serverless: 3.40.0(@types/node@20.19.35)
       velocityjs: 2.1.5
       ws: 7.5.10
     transitivePeerDependencies:
@@ -9843,7 +9848,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  serverless@3.40.0(@types/node@14.18.63):
+  serverless@3.40.0(@types/node@20.19.35):
     dependencies:
       '@aws-sdk/client-api-gateway': 3.1002.0
       '@aws-sdk/client-cognito-identity-provider': 3.1002.0
@@ -9851,9 +9856,9 @@ snapshots:
       '@aws-sdk/client-iam': 3.1002.0
       '@aws-sdk/client-lambda': 3.1002.0
       '@aws-sdk/client-s3': 3.1002.0
-      '@serverless/dashboard-plugin': 7.2.3(@types/node@14.18.63)(supports-color@8.1.1)
+      '@serverless/dashboard-plugin': 7.2.3(@types/node@20.19.35)(supports-color@8.1.1)
       '@serverless/platform-client': 4.5.1(supports-color@8.1.1)
-      '@serverless/utils': 6.15.0(@types/node@14.18.63)
+      '@serverless/utils': 6.15.0(@types/node@20.19.35)
       abort-controller: 3.0.0
       ajv: 8.18.0
       ajv-formats: 2.1.1(ajv@8.18.0)
@@ -10114,7 +10119,7 @@ snapshots:
 
   stripe@8.222.0:
     dependencies:
-      '@types/node': 14.18.63
+      '@types/node': 20.19.35
       qs: 6.15.0
 
   strnum@2.2.0: {}
@@ -10384,6 +10389,8 @@ snapshots:
     dependencies:
       buffer: 5.7.1
       through: 2.3.8
+
+  undici-types@6.21.0: {}
 
   undici@6.23.0: {}
 

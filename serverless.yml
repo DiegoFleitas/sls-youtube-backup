@@ -7,7 +7,7 @@ provider:
   stage: ${opt:stage, self:custom.defaultStage}
   region: us-east-1
   name: aws
-  runtime: nodejs18.x
+  runtime: nodejs20.x
   apiGateway:
     minimumCompressionSize: 1024
     shouldStartNameWithService: true
@@ -34,7 +34,7 @@ custom:
     bundle: true
     minify: false
     sourcemap: true
-    target: node18
+    target: node20
     define: {}
     platform: node
 
