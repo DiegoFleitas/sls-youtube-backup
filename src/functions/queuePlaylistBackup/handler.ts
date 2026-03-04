@@ -12,10 +12,10 @@ const queuePlaylistBackup = async (event) => {
     const playlistId = event?.body?.playlistId;
     if (!playlistId) {
       console.log(event);
-      return formatJSONResponse({
-        statusCode: 400,
-        message: "No playlist ID provided",
-      });
+      return formatJSONResponse(
+        { message: "No playlist ID provided" },
+        400
+      );
     }
 
     // Build the URL for the playlist API endpoint
@@ -39,11 +39,11 @@ const queuePlaylistBackup = async (event) => {
       message: videoIds,
     });
   } catch (err) {
-    console.log(err);
-    return formatJSONResponse({
-      statusCode: 500,
-      message: err,
-    });
+    console.error(err);
+    return formatJSONResponse(
+      { message: "Internal server error" },
+      500
+    );
   }
 };
 
