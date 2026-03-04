@@ -4,7 +4,7 @@ import { middyfy } from "../../libs/lambda";
 import { getSQSMessages } from "../../libs/sqs";
 
 const waybackAPI = "https://web.archive.org/save/";
-const youtubeAPI = "https://www.googleapis.com/youtube/v3/videos?id=";
+const youtubeAPIBase = "https://www.googleapis.com/youtube/v3/videos";
 
 interface BackupResult {
   status: "ok" | "error";
@@ -36,15 +36,22 @@ const backupVideos = async (
       (message) => (message as { Body?: string }).Body ?? ""
     ).filter(Boolean);
 
+    if (videoIds.length === 0) {
+      return { status: "ok", processed: 0 };
+    }
+
+    // Single batch request: videos.list accepts up to 50 comma-separated ids (1 quota unit)
+    const idsParam = videoIds.join(",");
+    const youtubeResponse = await axios.get(
+      `${youtubeAPIBase}?id=${encodeURIComponent(idsParam)}&key=${process.env.YOUTUBE_DATA_API_KEY}`
+    );
+    const existingIds = new Set(
+      (youtubeResponse.data.items as { id: string }[]).map((item) => item.id)
+    );
+
     let processed = 0;
     for (const videoId of videoIds) {
-      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-      const waybackUrl = `${waybackAPI}${youtubeUrl}`;
-
-      const youtubeResponse = await axios.get(
-        `${youtubeAPI}${videoId}&key=${process.env.YOUTUBE_DATA_API_KEY}`
-      );
-      if (youtubeResponse.data.items.length === 0) {
+      if (!existingIds.has(videoId)) {
         const result: BackupResult = {
           status: "error",
           message: `Video with ID ${videoId} not found`,
@@ -53,6 +60,9 @@ const backupVideos = async (
         console.log(result);
         return result;
       }
+
+      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      const waybackUrl = `${waybackAPI}${youtubeUrl}`;
 
       // video exists, check if backup exists too
       const checkUrl = `https://web.archive.org/web/20130720113437oe_/http://wayback-fakeurl.archive.org/yt/${videoId}`;
