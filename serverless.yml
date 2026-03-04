@@ -1,6 +1,6 @@
 service: sls-youtube-backup
 
-frameworkVersion: "2"
+frameworkVersion: "3"
 
 provider:
   # use dev if no stage is specified
