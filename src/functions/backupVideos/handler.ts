@@ -1,3 +1,4 @@
+import type { SQSEvent } from "aws-lambda";
 import axios from "axios";
 import { middyfy } from "../../libs/lambda";
 import { getSQSMessages } from "../../libs/sqs";
@@ -5,11 +6,11 @@ import { getSQSMessages } from "../../libs/sqs";
 const waybackAPI = "https://web.archive.org/save/";
 const youtubeAPI = "https://www.googleapis.com/youtube/v3/videos?id=";
 
-const backupVideos = async (event) => {
+const backupVideos = async (event: SQSEvent | { Messages?: { Body?: string }[] }) => {
   try {
     const queueResponse = await getSQSMessages(event);
 
-    if (!queueResponse || !queueResponse.Messages) {
+    if (!queueResponse || !("Messages" in queueResponse) || !queueResponse.Messages) {
       console.log(queueResponse);
       console.log({
         status: 500,
@@ -18,7 +19,9 @@ const backupVideos = async (event) => {
       return;
     }
 
-    const videoIds = queueResponse.Messages.map((message: any) => message.Body);
+    const videoIds = queueResponse.Messages.map(
+      (message) => (message as { Body?: string }).Body ?? ""
+    ).filter(Boolean);
 
     for (const videoId of videoIds) {
       const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
