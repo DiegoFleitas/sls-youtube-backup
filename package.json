@@ -16,7 +16,7 @@
     "test:queuePlaylistBackup": "cross-env SLS_DEBUG=* npx sls --config serverless.yml invoke local --inspect --function queuePlaylistBackup --path ./src/mocks/queuePlaylistBackup.json"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.700.0",
@@ -26,10 +26,10 @@
     "source-map-support": "^0.5.20"
   },
   "devDependencies": {
-    "@serverless/typescript": "^2.23.0",
+    "@serverless/typescript": "^3.0.0",
     "@types/aws-lambda": "^8.10.71",
     "@types/body-parser": "^1.19.1",
-    "@types/node": "^14.17.33",
+    "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^5.3.1",
     "@typescript-eslint/parser": "^5.3.1",
     "axios": "^0.24.0",
@@ -42,7 +42,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "json-schema-to-ts": "^1.5.0",
     "prettier": "^2.4.1",
-    "serverless": "^2.23.0",
+    "serverless": "^3.0.0",
     "serverless-dotenv-plugin": "^3.10.0",
     "serverless-esbuild": "^1.17.1",
     "serverless-lift": "^1.21.0",
