@@ -2,6 +2,7 @@
   "name": "sls-youtube-backup",
   "version": "1.0.0",
   "description": "Serverless youtube playlist backup based of aws-nodejs-typescript template",
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "eslint ./src --ext .ts --fix",
@@ -15,12 +16,12 @@
     "test:queuePlaylistBackup": "cross-env SLS_DEBUG=* npx sls --config serverless.yml invoke local --inspect --function queuePlaylistBackup --path ./src/mocks/queuePlaylistBackup.json"
   },
   "engines": {
-    "node": ">=14.15.0"
+    "node": ">=18.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.700.0",
     "@middy/core": "^1.5.2",
     "@middy/http-json-body-parser": "^1.5.2",
-    "aws-sdk": "^2.1286.0",
     "body-parser": "^1.19.0",
     "source-map-support": "^0.5.20"
   },

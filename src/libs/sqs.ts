@@ -1,17 +1,21 @@
 import type { SQSEvent } from "aws-lambda";
-import * as AWS from "aws-sdk";
+import {
+  ReceiveMessageCommand,
+  type ReceiveMessageCommandOutput,
+  SQSClient,
+  SendMessageCommand,
+} from "@aws-sdk/client-sqs";
 
-// TODO: comment this out if you don't want to see the logs
-AWS.config.logger = console;
+const REGION = "us-east-1";
 
-/** Local mock has same shape as ReceiveMessageResult for handler compatibility */
+/** Local mock has same shape as ReceiveMessageCommandOutput for handler compatibility */
 export type SQSMessagesResult =
-  | AWS.SQS.ReceiveMessageResult
+  | ReceiveMessageCommandOutput
   | SQSEvent
-  | { Messages?: AWS.SQS.Message[] };
+  | { Messages?: { Body?: string }[] };
 
 export async function getSQSMessages(
-  event: SQSEvent | { Messages?: AWS.SQS.Message[] }
+  event: SQSEvent | { Messages?: { Body?: string }[] }
 ): Promise<SQSMessagesResult> {
   if (process.env.IS_LOCAL) {
     return event;
@@ -22,13 +26,14 @@ export async function getSQSMessages(
     throw new Error("SQS_QUEUE_URL is not set");
   }
 
-  const sqs = new AWS.SQS({ region: "us-east-1" });
-  return sqs
-    .receiveMessage({
+  const client = new SQSClient({ region: REGION });
+  const result = await client.send(
+    new ReceiveMessageCommand({
       QueueUrl: queueUrl,
       MaxNumberOfMessages: 1,
     })
-    .promise();
+  );
+  return result;
 }
 
 export async function sendSQSMessage(videoId: string): Promise<void> {
@@ -37,15 +42,15 @@ export async function sendSQSMessage(videoId: string): Promise<void> {
     throw new Error("SQS_QUEUE_URL is not set");
   }
 
-  const sqs = new AWS.SQS({ region: "us-east-1" });
+  const client = new SQSClient({ region: REGION });
   try {
-    const data = await sqs
-      .sendMessage({
+    const result = await client.send(
+      new SendMessageCommand({
         QueueUrl: queueUrl,
         MessageBody: videoId,
       })
-      .promise();
-    console.log(data);
+    );
+    console.log(result);
   } catch (error) {
     console.error(error);
   }
