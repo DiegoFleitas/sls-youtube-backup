@@ -11,7 +11,8 @@ You'll need:
 ## Running tests
 
 ```
-npm run test:backupVideos
+npm test                    # unit tests (Jest)
+npm run test:backupVideos   # invoke backupVideos Lambda locally
 npm run test:queuePlaylistBackup
 ```
 
