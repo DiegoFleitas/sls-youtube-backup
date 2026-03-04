@@ -1,15 +1,18 @@
+import type { APIGatewayProxyEvent } from "aws-lambda";
 import axios from "axios";
-import * as AWS from "aws-sdk";
 import { middyfy } from "../../libs/lambda";
 import { formatJSONResponse } from "../../libs/apiGateway";
 import { sendSQSMessage } from "../../libs/sqs";
 
-const sqs = new AWS.SQS();
+interface YouTubePlaylistItem {
+  snippet: { resourceId: { videoId: string } };
+}
 
-const queuePlaylistBackup = async (event) => {
+const queuePlaylistBackup = async (event: APIGatewayProxyEvent) => {
   try {
     // Extract the playlist ID from the event data
-    const playlistId = event?.body?.playlistId;
+    const body = event.body as { playlistId?: string } | null;
+    const playlistId = body?.playlistId;
     if (!playlistId) {
       console.log(event);
       return formatJSONResponse(
@@ -25,7 +28,7 @@ const queuePlaylistBackup = async (event) => {
     const response = await axios.get(url);
 
     // Extract the video IDs from the response data
-    const videoIds = response.data.items.map(
+    const videoIds = (response.data.items as YouTubePlaylistItem[]).map(
       (item) => item.snippet.resourceId.videoId
     );
 
