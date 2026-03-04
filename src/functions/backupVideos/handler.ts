@@ -27,7 +27,7 @@ const backupVideos = async (event) => {
       const youtubeResponse = await axios.get(
         `${youtubeAPI}${videoId}&key=${process.env.YOUTUBE_DATA_API_KEY}`
       );
-      if (youtubeResponse.data.items.length < 0) {
+      if (youtubeResponse.data.items.length === 0) {
         console.log({
           status: 500,
           message: `Video with ID ${videoId} not found`,
