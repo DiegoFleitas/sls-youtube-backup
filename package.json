@@ -12,8 +12,8 @@
     "remove:prod": "NODE_ENV=production && npx sls remove --stage production",
     "remove:dev": "NODE_ENV=development && npx sls remove",
     "test": "jest --ci",
-    "test:backupVideos": "cross-env SLS_DEBUG=* npx sls --config serverless.yml invoke local --function backupVideos --path ./src/mocks/backupVideos.json",
-    "test:queuePlaylistBackup": "cross-env SLS_DEBUG=* npx sls --config serverless.yml invoke local --function queuePlaylistBackup --path ./src/mocks/queuePlaylistBackup.json"
+    "test:backupVideos": "cross-env SLS_DEBUG=* npx sls invoke local --function backupVideos --path ./src/mocks/backupVideos.json --config serverless.yml",
+    "test:queuePlaylistBackup": "cross-env SLS_DEBUG=* npx sls invoke local --function queuePlaylistBackup --path ./src/mocks/queuePlaylistBackup.json --config serverless.yml"
   },
   "engines": {
     "node": ">=20.0.0"
