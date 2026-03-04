@@ -8,31 +8,39 @@ You'll need:
 - to create a new app in Google Cloud console to be able to use Youtube Data API v3
 - to create a Wayback Machine account to request access keys for their S3-like API
 
+## Setup
+
+Install dependencies with [pnpm](https://pnpm.io/) (or npm):
+
+```bash
+pnpm install
+```
+
 ## Running tests
 
-```
-npm test                    # unit tests (Jest)
-npm run test:backupVideos   # invoke backupVideos Lambda locally
-npm run test:queuePlaylistBackup
+```bash
+pnpm test                    # unit tests (Jest)
+pnpm run test:backupVideos   # invoke backupVideos Lambda locally
+pnpm run test:queuePlaylistBackup
 ```
 
 ## Linting
 
-```
-npm run lint        # check only
-npm run lint:fix    # check and fix
+```bash
+pnpm run lint        # check only
+pnpm run lint:fix    # check and fix
 ```
 
 ## Deploying
 
-```
-npm run deploy:dev
+```bash
+pnpm run deploy:dev
 ```
 
 ## Cleaning up
 
-```
-npm run remove:dev
+```bash
+pnpm run remove:dev
 ```
 
 ## Other
