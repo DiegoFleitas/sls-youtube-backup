@@ -27,9 +27,6 @@ plugins:
 
 custom:
   defaultStage: dev
-  enableCron:
-    dev: false
-    production: true
   esbuild:
     bundle: true
     minify: false
@@ -44,13 +41,17 @@ package:
 constructs:
   video-backup-queue:
     type: queue
+    # Reference an existing function by name — Lift adds the SQS event source mapping.
+    worker: backupVideos
+    batchSize: 10
     extensions:
       queue:
         Properties:
           VisibilityTimeout: 120
-          RedrivePolicy:
-            deadLetterTargetArn: !GetAtt VideoBackupDlq.Arn
-            maxReceiveCount: 3
+      # Customise Lift's auto-created DLQ instead of adding a second resource.
+      dlq:
+        Properties:
+          MessageRetentionPeriod: 1209600
 
 functions:
   queuePlaylistBackup:
@@ -59,7 +60,6 @@ functions:
       SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
     memorySize: 128 # MB
     timeout: 5 # seconds
-    # TODO: remove this event
     events:
       - http:
           path: queuePlaylistBackup
@@ -68,21 +68,5 @@ functions:
 
   backupVideos:
     handler: src/functions/backupVideos/handler.main
-    environment:
-      SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
     memorySize: 128 # MB
     timeout: 60 # seconds
-    # TODO: might be a better way to do this
-    events:
-      - schedule:
-          rate: rate(1 minute)
-          # enable the cronjob for production only
-          enabled: ${self:custom.enableCron.${self:provider.stage}, false}
-
-resources:
-  Resources:
-    VideoBackupDlq:
-      Type: AWS::SQS::Queue
-      Properties:
-        QueueName: video-backup-dlq-${self:provider.stage}
-        MessageRetentionPeriod: 1209600 # 14 days
