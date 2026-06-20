@@ -17,7 +17,7 @@
     "strictNullChecks": true,
     "baseUrl": ".",
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "integration/**/*.ts", "e2e/**/*.ts"],
   "exclude": [
     "node_modules/**/*",
     ".serverless/**/*",

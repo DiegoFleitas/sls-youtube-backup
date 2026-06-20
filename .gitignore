@@ -21,3 +21,4 @@ dist/*
 
 .env.development
 .env.production
+.env.e2e
