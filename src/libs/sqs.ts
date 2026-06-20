@@ -88,11 +88,17 @@ export async function deleteSQSMessages(
   }
 
   for (let i = 0; i < entries.length; i += 10) {
-    await sqsClient.send(
+    const result = await sqsClient.send(
       new DeleteMessageBatchCommand({
         QueueUrl: queueUrl,
         Entries: entries.slice(i, i + 10),
       })
     );
+    if (result.Failed?.length) {
+      console.error(
+        `SQS batch delete partially failed: ${result.Failed.length} message(s) not deleted`,
+        result.Failed
+      );
+    }
   }
 }

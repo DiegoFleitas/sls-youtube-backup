@@ -55,9 +55,12 @@ async function processVideo(
     return { deleteMsg: true, counted: true, receiptHandle };
   }
 
+  // validateStatus prevents axios from throwing on non-2xx so we can inspect
+  // the status and decide whether to delete the message or leave it for retry.
   const waybackResponse = await axios.get(`${waybackSaveAPI}${youtubeUrl}`, {
     headers: { Authorization: `LOW ${process.env.WAYBACK_MACHINE_API_KEY}` },
     timeout: 30_000,
+    validateStatus: () => true,
   });
   if (waybackResponse.status !== 200) {
     // Transient failure — leave in queue for retry via visibility timeout
@@ -95,22 +98,24 @@ const backupVideos = async (
       return result;
     }
 
-    const messages = queueResponse.Messages as {
+    const allMessages = queueResponse.Messages as {
       Body?: string;
       ReceiptHandle?: string;
     }[];
-    const videoIds = messages.map((m) => m.Body ?? "").filter(Boolean);
+    // Keep messages and videoIds in sync so empty-body messages go to DLQ
+    // rather than being permanently deleted as "not found on YouTube".
+    const messages = allMessages.filter((m) => m.Body);
+    const videoIds = messages.map((m) => m.Body as string);
 
     if (videoIds.length === 0) {
       return { status: "ok", processed: 0 };
     }
 
-    // Single batch request: videos.list accepts up to 50 comma-separated ids (1 quota unit)
-    const idsParam = videoIds.join(",");
+    // Single batch request: videos.list accepts up to 50 comma-separated ids (1 quota unit).
+    // Encode each ID individually to avoid encoding the comma separator.
+    const idsParam = videoIds.map(encodeURIComponent).join(",");
     const youtubeResponse = await axios.get(
-      `${youtubeAPIBase}?id=${encodeURIComponent(idsParam)}&key=${
-        process.env.YOUTUBE_DATA_API_KEY
-      }`,
+      `${youtubeAPIBase}?id=${idsParam}&key=${process.env.YOUTUBE_DATA_API_KEY}`,
       { timeout: 10_000 }
     );
     const existingIds = new Set(
@@ -120,7 +125,7 @@ const backupVideos = async (
     // Process all videos concurrently — SQS delivers at most 10 at once
     const outcomes = await Promise.allSettled(
       messages.map((msg) =>
-        processVideo(msg.Body ?? "", msg.ReceiptHandle, existingIds)
+        processVideo(msg.Body as string, msg.ReceiptHandle, existingIds)
       )
     );
 
