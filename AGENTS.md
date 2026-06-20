@@ -47,6 +47,7 @@ No `typecheck` script exists. `tsc` is not run in CI. If you add it, create a sc
 ## Known issues
 
 - `deleteSQSMessages` does not check `Failed[]` in the `DeleteMessageBatchCommand` response — delete failures are silent.
+- `model/videoItem.ts` and `model/videoSchema.ts` exist at the repo root but are not imported by any runtime code.
 
 ## Env vars
 

@@ -29,6 +29,25 @@ POST /queuePlaylistBackup
 > [!NOTE]
 > The cron trigger is disabled in the `dev` stage and only runs in `production`.
 
+## Project structure
+
+```
+src/
+  functions/
+    backupVideos/handler.ts         # scheduled Lambda — polls SQS, archives videos
+    queuePlaylistBackup/handler.ts  # HTTP Lambda — paginates YouTube, enqueues IDs
+  libs/
+    sqs.ts                          # SQS helpers (send/receive/delete batches)
+    apiGateway.ts                   # API Gateway response helpers
+    lambda.ts                       # Middy handler factory
+    handlerResolver.ts              # local invoke shim
+    utils.ts                        # shared utilities
+  mocks/                            # JSON fixtures for sls invoke local
+integration/                        # handler integration tests (no Lambda runtime)
+e2e/                                # full-stack tests against ElasticMQ
+model/                              # VideoItem interface and schema (unused by runtime)
+```
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 20 and [pnpm](https://pnpm.io/)
