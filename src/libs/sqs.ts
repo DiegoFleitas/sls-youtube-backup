@@ -1,9 +1,10 @@
 import type { SQSEvent } from "aws-lambda";
 import {
+  DeleteMessageBatchCommand,
   ReceiveMessageCommand,
   type ReceiveMessageCommandOutput,
   SQSClient,
-  SendMessageCommand,
+  SendMessageBatchCommand,
 } from "@aws-sdk/client-sqs";
 
 const REGION = "us-east-1";
@@ -42,8 +43,7 @@ export async function getSQSMessages(
     throw new Error("SQS_QUEUE_URL is not set");
   }
 
-  const client = sqsClient;
-  const result = await client.send(
+  const result = await sqsClient.send(
     new ReceiveMessageCommand({
       QueueUrl: queueUrl,
       MaxNumberOfMessages: 10,
@@ -52,22 +52,47 @@ export async function getSQSMessages(
   return result;
 }
 
-export async function sendSQSMessage(videoId: string): Promise<void> {
+/** Sends up to many video IDs in batches of 10 (SQS batch limit). */
+export async function sendSQSMessages(videoIds: string[]): Promise<void> {
   const queueUrl = process.env.SQS_QUEUE_URL;
   if (!queueUrl) {
     throw new Error("SQS_QUEUE_URL is not set");
   }
 
-  const client = sqsClient;
-  try {
-    const result = await client.send(
-      new SendMessageCommand({
+  for (let i = 0; i < videoIds.length; i += 10) {
+    const batch = videoIds.slice(i, i + 10);
+    const result = await sqsClient.send(
+      new SendMessageBatchCommand({
         QueueUrl: queueUrl,
-        MessageBody: videoId,
+        Entries: batch.map((id, j) => ({ Id: String(j), MessageBody: id })),
       })
     );
-    console.log(result);
-  } catch (error) {
-    console.error(error);
+    if (result.Failed?.length) {
+      const failedIds = result.Failed.map((f) => videoIds[i + Number(f.Id)]);
+      throw new Error(
+        `SQS batch send partially failed: ${
+          result.Failed.length
+        } message(s) not enqueued (${failedIds.join(", ")})`
+      );
+    }
+  }
+}
+
+/** Deletes processed messages in batches of 10 (SQS batch limit). */
+export async function deleteSQSMessages(
+  entries: { Id: string; ReceiptHandle: string }[]
+): Promise<void> {
+  const queueUrl = process.env.SQS_QUEUE_URL;
+  if (!queueUrl) {
+    throw new Error("SQS_QUEUE_URL is not set");
+  }
+
+  for (let i = 0; i < entries.length; i += 10) {
+    await sqsClient.send(
+      new DeleteMessageBatchCommand({
+        QueueUrl: queueUrl,
+        Entries: entries.slice(i, i + 10),
+      })
+    );
   }
 }

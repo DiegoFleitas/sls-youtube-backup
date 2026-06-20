@@ -1,15 +1,78 @@
 import type { SQSEvent } from "aws-lambda";
 import axios from "axios";
 import { middyfy } from "../../libs/lambda";
-import { getSQSMessages } from "../../libs/sqs";
+import { getSQSMessages, deleteSQSMessages } from "../../libs/sqs";
 
-const waybackAPI = "https://web.archive.org/save/";
+const waybackSaveAPI = "https://web.archive.org/save/";
+const waybackAvailabilityAPI = "https://archive.org/wayback/available";
 const youtubeAPIBase = "https://www.googleapis.com/youtube/v3/videos";
 
 interface BackupResult {
   status: "ok" | "error";
   message?: string;
   processed?: number;
+}
+
+interface AvailabilityResponse {
+  archived_snapshots?: {
+    closest?: {
+      available?: boolean;
+    };
+  };
+}
+
+type MsgOutcome = {
+  deleteMsg: boolean;
+  counted: boolean;
+  receiptHandle?: string;
+};
+
+async function processVideo(
+  videoId: string,
+  receiptHandle: string | undefined,
+  existingIds: Set<string>
+): Promise<MsgOutcome> {
+  if (!existingIds.has(videoId)) {
+    console.log({
+      status: "skip",
+      message: `Video ${videoId} not found on YouTube`,
+    });
+    // Permanent failure — retrying won't help, delete the message
+    return { deleteMsg: true, counted: false, receiptHandle };
+  }
+
+  const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+  const availabilityResponse = await axios.get<AvailabilityResponse>(
+    `${waybackAvailabilityAPI}?url=${encodeURIComponent(youtubeUrl)}`,
+    { timeout: 15_000 }
+  );
+  if (availabilityResponse.data.archived_snapshots?.closest?.available) {
+    console.log({
+      status: 200,
+      message: `Video already archived: ${youtubeUrl}`,
+    });
+    return { deleteMsg: true, counted: true, receiptHandle };
+  }
+
+  const waybackResponse = await axios.get(`${waybackSaveAPI}${youtubeUrl}`, {
+    headers: { Authorization: `LOW ${process.env.WAYBACK_MACHINE_API_KEY}` },
+    timeout: 30_000,
+  });
+  if (waybackResponse.status !== 200) {
+    // Transient failure — leave in queue for retry via visibility timeout
+    console.log({
+      status: waybackResponse.status,
+      message: `Error backing up ${youtubeUrl} to the Wayback Machine`,
+    });
+    return { deleteMsg: false, counted: false };
+  }
+
+  console.log({
+    status: 200,
+    message: `Successfully backed up ${youtubeUrl} to the Wayback Machine`,
+  });
+  return { deleteMsg: true, counted: true, receiptHandle };
 }
 
 const backupVideos = async (
@@ -32,9 +95,11 @@ const backupVideos = async (
       return result;
     }
 
-    const videoIds = queueResponse.Messages.map(
-      (message) => (message as { Body?: string }).Body ?? ""
-    ).filter(Boolean);
+    const messages = queueResponse.Messages as {
+      Body?: string;
+      ReceiptHandle?: string;
+    }[];
+    const videoIds = messages.map((m) => m.Body ?? "").filter(Boolean);
 
     if (videoIds.length === 0) {
       return { status: "ok", processed: 0 };
@@ -45,63 +110,47 @@ const backupVideos = async (
     const youtubeResponse = await axios.get(
       `${youtubeAPIBase}?id=${encodeURIComponent(idsParam)}&key=${
         process.env.YOUTUBE_DATA_API_KEY
-      }`
+      }`,
+      { timeout: 10_000 }
     );
     const existingIds = new Set(
       (youtubeResponse.data.items as { id: string }[]).map((item) => item.id)
     );
 
+    // Process all videos concurrently — SQS delivers at most 10 at once
+    const outcomes = await Promise.allSettled(
+      messages.map((msg) =>
+        processVideo(msg.Body ?? "", msg.ReceiptHandle, existingIds)
+      )
+    );
+
     let processed = 0;
-    for (const videoId of videoIds) {
-      if (!existingIds.has(videoId)) {
-        const result: BackupResult = {
-          status: "error",
-          message: `Video with ID ${videoId} not found`,
-          processed,
-        };
-        console.log(result);
-        return result;
+    const toDelete: { Id: string; ReceiptHandle: string }[] = [];
+
+    for (let i = 0; i < outcomes.length; i++) {
+      const outcome = outcomes[i];
+      if (outcome.status === "fulfilled") {
+        const { deleteMsg, counted, receiptHandle } = outcome.value;
+        if (counted) processed++;
+        if (deleteMsg && receiptHandle) {
+          toDelete.push({ Id: String(i), ReceiptHandle: receiptHandle });
+        }
+      } else {
+        console.error(
+          `Unexpected error processing message ${i}:`,
+          outcome.reason
+        );
       }
+    }
 
-      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-      const waybackUrl = `${waybackAPI}${youtubeUrl}`;
-
-      // video exists, check if backup exists too
-      const checkUrl = `https://web.archive.org/web/20130720113437oe_/http://wayback-fakeurl.archive.org/yt/${videoId}`;
-      const waybackCheckResponse = await axios.get(checkUrl, {
-        validateStatus: () => true,
-      });
-      if (waybackCheckResponse.status === 200) {
-        console.log({
-          status: 200,
-          message: `Video has been backed up to the Wayback Machine already: ${checkUrl}`,
-        });
-        processed++;
-        continue;
+    if (!process.env.IS_LOCAL && toDelete.length > 0) {
+      try {
+        await deleteSQSMessages(toDelete);
+      } catch (deleteError) {
+        // Messages will be re-processed after visibility timeout expires.
+        // The Wayback availability check prevents duplicate archives.
+        console.error("Failed to delete processed SQS messages:", deleteError);
       }
-
-      // video exists & backup doesn't, proceed to backup
-      const waybackResponse = await axios.get(waybackUrl, {
-        headers: {
-          Authorization: `LOW ${process.env.WAYBACK_MACHINE_API_KEY}`,
-        },
-      });
-      if (waybackResponse.status !== 200) {
-        console.log(waybackResponse);
-        const result: BackupResult = {
-          status: "error",
-          message: `Error backing up ${youtubeUrl} to the Wayback Machine`,
-          processed,
-        };
-        console.log(result);
-        return result;
-      }
-
-      console.log({
-        status: 200,
-        message: `Successfully backed up ${youtubeUrl} to the Wayback Machine`,
-      });
-      processed++;
     }
 
     return { status: "ok", processed };

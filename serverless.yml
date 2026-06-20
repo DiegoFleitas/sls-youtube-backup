@@ -44,8 +44,13 @@ package:
 constructs:
   video-backup-queue:
     type: queue
-    worker:
-      handler: src/functions/queuePlaylistBackup/handler.main
+    extensions:
+      queue:
+        Properties:
+          VisibilityTimeout: 120
+          RedrivePolicy:
+            deadLetterTargetArn: !GetAtt VideoBackupDlq.Arn
+            maxReceiveCount: 3
 
 functions:
   queuePlaylistBackup:
@@ -66,10 +71,18 @@ functions:
     environment:
       SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
     memorySize: 128 # MB
-    timeout: 5 # seconds
+    timeout: 60 # seconds
     # TODO: might be a better way to do this
     events:
       - schedule:
           rate: rate(1 minute)
           # enable the cronjob for production only
           enabled: ${self:custom.enableCron.${self:provider.stage}, false}
+
+resources:
+  Resources:
+    VideoBackupDlq:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: video-backup-dlq-${self:provider.stage}
+        MessageRetentionPeriod: 1209600 # 14 days

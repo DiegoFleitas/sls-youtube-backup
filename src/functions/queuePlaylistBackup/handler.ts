@@ -2,7 +2,7 @@ import type { APIGatewayProxyEvent } from "aws-lambda";
 import axios from "axios";
 import { middyfy } from "../../libs/lambda";
 import { formatJSONResponse } from "../../libs/apiGateway";
-import { sendSQSMessage } from "../../libs/sqs";
+import { sendSQSMessages } from "../../libs/sqs";
 
 interface YouTubePlaylistItem {
   snippet: { resourceId: { videoId: string } };
@@ -19,7 +19,6 @@ const queuePlaylistBackup = async (event: APIGatewayProxyEvent) => {
     const body = event.body as { playlistId?: string } | null;
     const playlistId = body?.playlistId;
     if (!playlistId) {
-      console.log(event);
       return formatJSONResponse({ message: "No playlist ID provided" }, 400);
     }
 
@@ -37,7 +36,9 @@ const queuePlaylistBackup = async (event: APIGatewayProxyEvent) => {
       });
       if (pageToken) params.set("pageToken", pageToken);
       const url = `https://www.googleapis.com/youtube/v3/playlistItems?${params.toString()}`;
-      const response = await axios.get<PlaylistItemsResponse>(url);
+      const response = await axios.get<PlaylistItemsResponse>(url, {
+        timeout: 10_000,
+      });
 
       const pageIds = (response.data.items ?? []).map(
         (item) => item.snippet.resourceId.videoId
@@ -46,10 +47,8 @@ const queuePlaylistBackup = async (event: APIGatewayProxyEvent) => {
       pageToken = response.data.nextPageToken;
     } while (pageToken);
 
-    // Send each video ID to the SQS queue as a separate message
-    for (const videoId of videoIds) {
-      await sendSQSMessage(videoId);
-    }
+    // Send all video IDs to SQS in batches of 10
+    await sendSQSMessages(videoIds);
 
     // Return the array of video IDs
     return formatJSONResponse({
