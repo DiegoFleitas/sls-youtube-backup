@@ -2,7 +2,7 @@
 
 Backs up a YouTube playlist to the [Wayback Machine](https://web.archive.org/) using two AWS Lambda functions and SQS.
 
-One function receives a playlist ID via HTTP and enqueues each video; the other runs on a schedule to check existing archives and submit unarchived videos.
+One function receives a playlist ID via HTTP and enqueues each video; the other is triggered by SQS to check existing archives and submit unarchived videos.
 
 ## How it works
 
@@ -14,11 +14,12 @@ POST /queuePlaylistBackup
 │  queuePlaylistBackup     │─────▶│  SQS               │
 │  (HTTP Lambda)           │      │  video-backup-queue│
 │  • Paginates YouTube     │      └─────────┬──────────┘
-│    playlistItems.list    │                │
-│  • Enqueues each videoId │                ▼
-└──────────────────────────┘      ┌────────────────────┐
+│    playlistItems.list    │                │ event-source
+│  • Enqueues each videoId │                │ mapping (Lift)
+└──────────────────────────┘                ▼
+                                  ┌────────────────────┐
                                   │  backupVideos      │
-                                  │  (1-min cron*)     │
+                                  │  (SQS worker)      │
                                   │  • Batch-fetches   │
                                   │    videos.list     │
                                   │  • Checks archive  │
@@ -26,18 +27,15 @@ POST /queuePlaylistBackup
                                   └────────────────────┘
 ```
 
-> [!NOTE]
-> The cron trigger is disabled in the `dev` stage and only runs in `production`.
-
 ## Project structure
 
 ```
 src/
   functions/
-    backupVideos/handler.ts         # scheduled Lambda — polls SQS, archives videos
+    backupVideos/handler.ts         # SQS worker — receives SQSEvent, archives videos
     queuePlaylistBackup/handler.ts  # HTTP Lambda — paginates YouTube, enqueues IDs
   libs/
-    sqs.ts                          # SQS helpers (send/receive/delete batches)
+    sqs.ts                          # sendSQSMessages helper (batch send)
     apiGateway.ts                   # API Gateway response helpers
     lambda.ts                       # Middy handler factory
     handlerResolver.ts              # local invoke shim
@@ -124,7 +122,7 @@ pnpm run lint:fix    # check and fix
 pnpm run deploy:dev    # deploy to the dev stage
 pnpm run remove:dev    # tear down the dev stack
 
-pnpm run deploy:prod   # deploy to production (enables the cron trigger)
+pnpm run deploy:prod   # deploy to production
 pnpm run remove:prod   # tear down production
 ```
 
