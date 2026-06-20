@@ -1,11 +1,4 @@
-import type { SQSEvent } from "aws-lambda";
-import {
-  DeleteMessageBatchCommand,
-  ReceiveMessageCommand,
-  type ReceiveMessageCommandOutput,
-  SQSClient,
-  SendMessageBatchCommand,
-} from "@aws-sdk/client-sqs";
+import { SendMessageBatchCommand, SQSClient } from "@aws-sdk/client-sqs";
 
 const REGION = "us-east-1";
 
@@ -25,34 +18,7 @@ function buildSQSClient(): SQSClient {
 
 const sqsClient = buildSQSClient();
 
-/** Local mock has same shape as ReceiveMessageCommandOutput for handler compatibility */
-export type SQSMessagesResult =
-  | ReceiveMessageCommandOutput
-  | SQSEvent
-  | { Messages?: { Body?: string }[] };
-
-export async function getSQSMessages(
-  event: SQSEvent | { Messages?: { Body?: string }[] }
-): Promise<SQSMessagesResult> {
-  if (process.env.IS_LOCAL) {
-    return event;
-  }
-
-  const queueUrl = process.env.SQS_QUEUE_URL;
-  if (!queueUrl) {
-    throw new Error("SQS_QUEUE_URL is not set");
-  }
-
-  const result = await sqsClient.send(
-    new ReceiveMessageCommand({
-      QueueUrl: queueUrl,
-      MaxNumberOfMessages: 10,
-    })
-  );
-  return result;
-}
-
-/** Sends up to many video IDs in batches of 10 (SQS batch limit). */
+/** Sends video IDs to SQS in batches of 10 (SQS batch limit). */
 export async function sendSQSMessages(videoIds: string[]): Promise<void> {
   const queueUrl = process.env.SQS_QUEUE_URL;
   if (!queueUrl) {
@@ -73,31 +39,6 @@ export async function sendSQSMessages(videoIds: string[]): Promise<void> {
         `SQS batch send partially failed: ${
           result.Failed.length
         } message(s) not enqueued (${failedIds.join(", ")})`
-      );
-    }
-  }
-}
-
-/** Deletes processed messages in batches of 10 (SQS batch limit). */
-export async function deleteSQSMessages(
-  entries: { Id: string; ReceiptHandle: string }[]
-): Promise<void> {
-  const queueUrl = process.env.SQS_QUEUE_URL;
-  if (!queueUrl) {
-    throw new Error("SQS_QUEUE_URL is not set");
-  }
-
-  for (let i = 0; i < entries.length; i += 10) {
-    const result = await sqsClient.send(
-      new DeleteMessageBatchCommand({
-        QueueUrl: queueUrl,
-        Entries: entries.slice(i, i + 10),
-      })
-    );
-    if (result.Failed?.length) {
-      console.error(
-        `SQS batch delete partially failed: ${result.Failed.length} message(s) not deleted`,
-        result.Failed
       );
     }
   }
