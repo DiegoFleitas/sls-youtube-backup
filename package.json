@@ -18,7 +18,7 @@
     "test:queuePlaylistBackup": "cross-env SLS_DEBUG=* npx sls invoke local --function queuePlaylistBackup --path ./src/mocks/queuePlaylistBackup.json --config serverless.yml"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.13.0"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.700.0",
