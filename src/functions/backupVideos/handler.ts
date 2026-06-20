@@ -43,7 +43,9 @@ const backupVideos = async (
     // Single batch request: videos.list accepts up to 50 comma-separated ids (1 quota unit)
     const idsParam = videoIds.join(",");
     const youtubeResponse = await axios.get(
-      `${youtubeAPIBase}?id=${encodeURIComponent(idsParam)}&key=${process.env.YOUTUBE_DATA_API_KEY}`
+      `${youtubeAPIBase}?id=${encodeURIComponent(idsParam)}&key=${
+        process.env.YOUTUBE_DATA_API_KEY
+      }`
     );
     const existingIds = new Set(
       (youtubeResponse.data.items as { id: string }[]).map((item) => item.id)
@@ -66,7 +68,9 @@ const backupVideos = async (
 
       // video exists, check if backup exists too
       const checkUrl = `https://web.archive.org/web/20130720113437oe_/http://wayback-fakeurl.archive.org/yt/${videoId}`;
-      const waybackCheckResponse = await axios.get(checkUrl);
+      const waybackCheckResponse = await axios.get(checkUrl, {
+        validateStatus: () => true,
+      });
       if (waybackCheckResponse.status === 200) {
         console.log({
           status: 200,
