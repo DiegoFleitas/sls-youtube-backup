@@ -1,37 +1,65 @@
-A serverless application to backup a youtube playlist into the wayback machine
+# sls-youtube-backup
 
-## Before starting
+Backs up a YouTube playlist to the [Wayback Machine](https://web.archive.org/) using two AWS Lambda functions and SQS.
 
-You'll need:
+One function receives a playlist ID via HTTP and enqueues each video; the other runs on a schedule to check existing archives and submit unarchived videos.
 
-- an AWS account to set up the serverless project
-- to create a new app in Google Cloud console to be able to use Youtube Data API v3
-- to create a Wayback Machine account to request access keys for their S3-like API
+## How it works
 
-Set `WAYBACK_MACHINE_API_KEY` to your access key and secret in one string: `accesskey:secret` (from [archive.org/account/s3.php](https://archive.org/account/s3.php)).
+```
+POST /queuePlaylistBackup
+         │
+         ▼
+┌──────────────────────────┐      ┌────────────────────┐
+│  queuePlaylistBackup     │─────▶│  SQS               │
+│  (HTTP Lambda)           │      │  video-backup-queue│
+│  • Paginates YouTube     │      └─────────┬──────────┘
+│    playlistItems.list    │                │
+│  • Enqueues each videoId │                ▼
+└──────────────────────────┘      ┌────────────────────┐
+                                  │  backupVideos      │
+                                  │  (1-min cron*)     │
+                                  │  • Batch-fetches   │
+                                  │    videos.list     │
+                                  │  • Checks archive  │
+                                  │  • Submits new     │
+                                  └────────────────────┘
+```
+
+> [!NOTE]
+> The cron trigger is disabled in the `dev` stage and only runs in `production`.
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) >= 20 and [pnpm](https://pnpm.io/)
+- [Docker](https://www.docker.com/) (for local E2E tests only)
+- An [AWS account](https://aws.amazon.com/) with credentials configured
+- A [Google Cloud](https://console.cloud.google.com/) project with YouTube Data API v3 enabled
+- A [Wayback Machine](https://archive.org/account/s3.php) account for S3-like API keys
 
 ## Setup
-
-Install dependencies with [pnpm](https://pnpm.io/) (or npm):
 
 ```bash
 pnpm install
 ```
 
-## Running tests
+Create a `.env.development` file at the project root:
+
+| Variable | Description |
+|---|---|
+| `YOUTUBE_DATA_API_KEY` | YouTube Data API v3 key from Google Cloud |
+| `WAYBACK_MACHINE_API_KEY` | `accesskey:secret` from [archive.org/account/s3.php](https://archive.org/account/s3.php) |
+
+## Testing
 
 ```bash
-pnpm test                      # unit tests (Jest)
-pnpm run test:integration      # integration tests (handlers with mocked YouTube, SQS, Wayback)
-pnpm run test:backupVideos     # invoke backupVideos Lambda locally
-pnpm run test:queuePlaylistBackup
+pnpm test                    # unit tests
+pnpm run test:integration    # integration tests (no real APIs or AWS needed)
 ```
 
-**Integration tests** run the full handler logic with mocked external services (no real API keys or AWS needed).
+### E2E tests
 
-### Real E2E locally
-
-Run the full flow (HTTP → queue → worker) against a local ElasticMQ SQS:
+The E2E suite runs the full HTTP → SQS → worker flow against a local [ElasticMQ](https://github.com/softwaremill/elasticmq) instance. The stack-only flow mocks YouTube and Wayback, so no API keys are needed.
 
 1. Start ElasticMQ:
 
@@ -39,39 +67,51 @@ Run the full flow (HTTP → queue → worker) against a local ElasticMQ SQS:
    docker compose -f docker-compose.e2e.yml up -d
    ```
 
-2. Set env (e.g. copy `.env.e2e.example` to `.env.e2e` and source it or export):
+2. Set the queue env vars:
 
-   - `SQS_QUEUE_URL=http://localhost:9324/000000000000/video-backup-queue`
-   - `SQS_ENDPOINT_URL=http://localhost:9324`
+   ```bash
+   export SQS_QUEUE_URL=http://localhost:9324/000000000000/video-backup-queue
+   export SQS_ENDPOINT_URL=http://localhost:9324
+   ```
 
-3. Run e2e tests:
+3. Run:
 
    ```bash
    pnpm run test:e2e
    ```
 
-   The e2e suite is skipped when `SQS_QUEUE_URL` or `SQS_ENDPOINT_URL` is unset, so CI can run without ElasticMQ. Stack-only e2e mocks YouTube and Wayback (no API keys). For full e2e with real APIs, set `YOUTUBE_DATA_API_KEY` and `WAYBACK_MACHINE_API_KEY` and adjust the e2e test to not mock axios.
+> [!NOTE]
+> Jest skips E2E tests when `SQS_QUEUE_URL` or `SQS_ENDPOINT_URL` is unset, so CI works without Docker.
+
+### Local invocation
+
+Run each Lambda locally against mock event fixtures:
+
+```bash
+pnpm run test:backupVideos
+pnpm run test:queuePlaylistBackup
+```
 
 ## Linting
 
 ```bash
-pnpm run lint        # check only
+pnpm run lint        # check
 pnpm run lint:fix    # check and fix
 ```
 
 ## Deploying
 
 ```bash
-pnpm run deploy:dev
+pnpm run deploy:dev    # deploy to the dev stage
+pnpm run remove:dev    # tear down the dev stack
+
+pnpm run deploy:prod   # deploy to production (enables the cron trigger)
+pnpm run remove:prod   # tear down production
 ```
 
-## Cleaning up
+## References
 
-```bash
-pnpm run remove:dev
-```
-
-## Other
-
-- [Wayback Machine - Get Your S3-Like API Keys](https://archive.org/account/s3.php)
-- [Youtube Data API Reference](https://developers.google.com/youtube/v3/docs)
+- [YouTube Data API v3](https://developers.google.com/youtube/v3/docs)
+- [Wayback Machine S3-like API Keys](https://archive.org/account/s3.php)
+- [Serverless Framework](https://www.serverless.com/framework/docs)
+- [serverless-lift](https://github.com/getlift/lift)
