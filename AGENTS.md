@@ -46,11 +46,7 @@ No `typecheck` script exists. `tsc` is not run in CI. If you add it, create a sc
 
 ## Known issues
 
-- **Secrets committed**: `.env.development` and `.env.e2e` contain real `YOUTUBE_DATA_API_KEY` and `WAYBACK_MACHINE_API_KEY`. Do not proxy or expose these. Remove from git if possible.
-- `sendSQSMessage` (`src/libs/sqs.ts:54`) logs errors but does not throw — failures are silent.
-- `backupVideos/handler.ts` returns early on the first video not found in YouTube — remaining messages in the batch are dropped.
-- Wayback check URL is hardcoded to a specific timestamp (`20130720113437oe_`) which may become stale.
-- `model/videoItem.ts` has an `enum Boolean` pattern — not used by the runtime code. `model/videoSchema.ts` is also unused.
+- `deleteSQSMessages` does not check `Failed[]` in the `DeleteMessageBatchCommand` response — delete failures are silent.
 
 ## Env vars
 
