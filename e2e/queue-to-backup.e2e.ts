@@ -7,6 +7,7 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import axios from "axios";
 import { main as backupVideosMain } from "../src/functions/backupVideos/handler";
 import { main as queuePlaylistBackupMain } from "../src/functions/queuePlaylistBackup/handler";
+import { getSQSMessages } from "../src/libs/sqs";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -69,7 +70,12 @@ describeE2E("e2e queue to backup (real SQS)", () => {
     mockedAxios.get.mockResolvedValueOnce({
       data: { items: [{ id: videoId }] },
     });
-    mockedAxios.get.mockResolvedValueOnce({ status: 404 });
+    // Wayback availability API: not yet archived
+    mockedAxios.get.mockResolvedValueOnce({
+      data: { archived_snapshots: { closest: { available: false } } },
+      status: 200,
+    });
+    // Wayback save: success
     mockedAxios.get.mockResolvedValueOnce({ status: 200 });
 
     const backupResult = (await (backupVideosMain as unknown as (
@@ -82,5 +88,11 @@ describeE2E("e2e queue to backup (real SQS)", () => {
 
     expect(backupResult.status).toBe("ok");
     expect(backupResult.processed).toBe(1);
+
+    // 3) Verify the message was deleted from SQS (not just made invisible)
+    const afterPoll = (await getSQSMessages({} as never)) as {
+      Messages?: unknown[];
+    };
+    expect(afterPoll.Messages ?? []).toHaveLength(0);
   });
 });

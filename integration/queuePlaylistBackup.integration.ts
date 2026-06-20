@@ -10,7 +10,7 @@ jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 jest.mock("../src/libs/sqs", () => ({
-  sendSQSMessage: jest.fn().mockResolvedValue(undefined),
+  sendSQSMessages: jest.fn().mockResolvedValue(undefined),
 }));
 
 function makeEvent(overrides: Partial<APIGatewayProxyEvent> = {}): APIGatewayProxyEvent {
@@ -75,13 +75,13 @@ describe("queuePlaylistBackup integration", () => {
     expect(body.message).toEqual(videoIds);
     expect(mockedAxios.get).toHaveBeenCalledTimes(1);
     expect(mockedAxios.get).toHaveBeenCalledWith(
-      expect.stringContaining(`playlistId=${playlistId}`)
+      expect.stringContaining(`playlistId=${playlistId}`),
+      expect.any(Object)
     );
 
-    const { sendSQSMessage } = await import("../src/libs/sqs");
-    expect(sendSQSMessage).toHaveBeenCalledTimes(2);
-    expect(sendSQSMessage).toHaveBeenCalledWith("vid1");
-    expect(sendSQSMessage).toHaveBeenCalledWith("vid2");
+    const { sendSQSMessages } = await import("../src/libs/sqs");
+    expect(sendSQSMessages).toHaveBeenCalledTimes(1);
+    expect(sendSQSMessages).toHaveBeenCalledWith(videoIds);
   });
 
   it("returns 500 when YouTube API throws", async () => {
@@ -90,6 +90,28 @@ describe("queuePlaylistBackup integration", () => {
       body: { playlistId: "PLfail" } as unknown as string,
     });
     const result = await invoke(event);
+    expect(result?.statusCode).toBe(500);
+    const body = JSON.parse(result?.body ?? "{}");
+    expect(body.message).toBe("Internal server error");
+  });
+
+  it("returns 500 when SQS batch send partially fails", async () => {
+    const playlistId = "PLpartial";
+    mockedAxios.get.mockResolvedValueOnce({
+      data: {
+        items: [{ snippet: { resourceId: { videoId: "vid1" } } }],
+      },
+    });
+    const { sendSQSMessages } = await import("../src/libs/sqs");
+    (sendSQSMessages as jest.Mock).mockRejectedValueOnce(
+      new Error("SQS batch send partially failed: 1 message(s) not enqueued (vid1)")
+    );
+
+    const event = makeEvent({
+      body: { playlistId } as unknown as string,
+    });
+    const result = await invoke(event);
+
     expect(result?.statusCode).toBe(500);
     const body = JSON.parse(result?.body ?? "{}");
     expect(body.message).toBe("Internal server error");
