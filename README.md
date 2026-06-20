@@ -21,10 +21,36 @@ pnpm install
 ## Running tests
 
 ```bash
-pnpm test                    # unit tests (Jest)
-pnpm run test:backupVideos   # invoke backupVideos Lambda locally
+pnpm test                      # unit tests (Jest)
+pnpm run test:integration      # integration tests (handlers with mocked YouTube, SQS, Wayback)
+pnpm run test:backupVideos     # invoke backupVideos Lambda locally
 pnpm run test:queuePlaylistBackup
 ```
+
+**Integration tests** run the full handler logic with mocked external services (no real API keys or AWS needed).
+
+### Real E2E locally
+
+Run the full flow (HTTP → queue → worker) against a local ElasticMQ SQS:
+
+1. Start ElasticMQ:
+
+   ```bash
+   docker compose -f docker-compose.e2e.yml up -d
+   ```
+
+2. Set env (e.g. copy `.env.e2e.example` to `.env.e2e` and source it or export):
+
+   - `SQS_QUEUE_URL=http://localhost:9324/000000000000/video-backup-queue`
+   - `SQS_ENDPOINT_URL=http://localhost:9324`
+
+3. Run e2e tests:
+
+   ```bash
+   pnpm run test:e2e
+   ```
+
+   The e2e suite is skipped when `SQS_QUEUE_URL` or `SQS_ENDPOINT_URL` is unset, so CI can run without ElasticMQ. Stack-only e2e mocks YouTube and Wayback (no API keys). For full e2e with real APIs, set `YOUTUBE_DATA_API_KEY` and `WAYBACK_MACHINE_API_KEY` and adjust the e2e test to not mock axios.
 
 ## Linting
 
