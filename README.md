@@ -1,8 +1,6 @@
 # sls-youtube-backup
 
-Backs up a YouTube playlist to the [Wayback Machine](https://web.archive.org/) using two AWS Lambda functions and SQS.
-
-One function receives a playlist ID via HTTP and enqueues each video; the other is triggered by SQS to check existing archives and submit unarchived videos.
+Backs up a YouTube playlist to the [Wayback Machine](https://web.archive.org/) using two Lambda functions and SQS.
 
 ## How it works
 
@@ -49,10 +47,10 @@ model/                              # VideoItem interface and schema (unused by 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 20 and [pnpm](https://pnpm.io/)
-- [Docker](https://www.docker.com/) (for local E2E tests only)
-- An [AWS account](https://aws.amazon.com/) with credentials configured
-- A [Google Cloud](https://console.cloud.google.com/) project with YouTube Data API v3 enabled
-- A [Wayback Machine](https://archive.org/account/s3.php) account for S3-like API keys
+- [Docker](https://www.docker.com/) (E2E tests only)
+- AWS credentials
+- YouTube Data API v3 key (from Google Cloud)
+- Wayback Machine API key (from [archive.org/account/s3.php](https://archive.org/account/s3.php))
 
 ## Setup
 
@@ -60,7 +58,7 @@ model/                              # VideoItem interface and schema (unused by 
 pnpm install
 ```
 
-Create a `.env.development` file at the project root:
+Create `.env.development`:
 
 | Variable | Description |
 |---|---|
@@ -76,7 +74,7 @@ pnpm run test:integration    # integration tests (no real APIs or AWS needed)
 
 ### E2E tests
 
-The E2E suite runs the full HTTP → SQS → worker flow against a local [ElasticMQ](https://github.com/softwaremill/elasticmq) instance. The stack-only flow mocks YouTube and Wayback, so no API keys are needed.
+Runs the queue flow against a local [ElasticMQ](https://github.com/softwaremill/elasticmq) instance. YouTube and Wayback calls are mocked, so no API keys needed.
 
 1. Start ElasticMQ:
 
@@ -98,11 +96,11 @@ The E2E suite runs the full HTTP → SQS → worker flow against a local [Elasti
    ```
 
 > [!NOTE]
-> Jest skips E2E tests when `SQS_QUEUE_URL` or `SQS_ENDPOINT_URL` is unset, so CI works without Docker.
+> E2E tests are skipped when `SQS_QUEUE_URL` or `SQS_ENDPOINT_URL` are unset, so CI runs without Docker.
 
 ### Local invocation
 
-Run each Lambda locally against mock event fixtures:
+Run each function locally with mock fixtures:
 
 ```bash
 pnpm run test:backupVideos
