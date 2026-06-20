@@ -1,0 +1,13 @@
+# Real e2e locally: ElasticMQ for SQS. Start with:
+#   docker compose -f docker-compose.e2e.yml up -d
+# Queue URL for app: http://localhost:9324/000000000000/video-backup-queue
+# Set SQS_QUEUE_URL and SQS_ENDPOINT_URL=http://localhost:9324 when running e2e.
+
+services:
+  elasticmq:
+    image: softwaremill/elasticmq-native:latest
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    volumes:
+      - ./e2e/elasticmq.conf:/opt/elasticmq.conf
