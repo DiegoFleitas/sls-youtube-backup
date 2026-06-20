@@ -1,10 +1,15 @@
 {
-  "Messages": [
+  "Records": [
     {
-      "MessageId": "b67e3a5e-f1c8-45b3-b1c2-f5f1d0bcc63b",
-      "ReceiptHandle": "AQEBj2M1YjEzYTYyMjg5NGYwMDAwMDAwMDAwMDAwMDAwMDAwMjI=",
-      "MD5OfBody": "d41d8cd98f00b204e9800998ecf8427e",
-      "Body": "shF8Sv-OswM"
+      "messageId": "b67e3a5e-f1c8-45b3-b1c2-f5f1d0bcc63b",
+      "receiptHandle": "AQEBj2M1YjEzYTYyMjg5NGYwMDAwMDAwMDAwMDAwMDAwMDAwMjI=",
+      "body": "shF8Sv-OswM",
+      "attributes": {},
+      "messageAttributes": {},
+      "md5OfBody": "d41d8cd98f00b204e9800998ecf8427e",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:video-backup-queue",
+      "awsRegion": "us-east-1"
     }
   ]
 }

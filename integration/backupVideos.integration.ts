@@ -1,223 +1,138 @@
+import type { SQSBatchResponse, SQSEvent } from "aws-lambda";
 import axios from "axios";
 import { main } from "../src/functions/backupVideos/handler";
-import { getSQSMessages, deleteSQSMessages } from "../src/libs/sqs";
 
 jest.mock("axios");
-jest.mock("../src/libs/sqs", () => ({
-  getSQSMessages: jest.fn(),
-  deleteSQSMessages: jest.fn(),
-}));
-
 const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockGetSQSMessages = getSQSMessages as jest.Mock;
-const mockDeleteSQSMessages = deleteSQSMessages as jest.Mock;
 
-type BackupResult =
-  | { status: "ok"; processed: number }
-  | { status: "error"; message: string; processed?: number };
+/** Build a minimal SQSEvent from an array of message bodies. */
+function makeSQSEvent(
+  messages: { messageId: string; body: string }[]
+): SQSEvent {
+  return {
+    Records: messages.map((m) => ({
+      messageId: m.messageId,
+      receiptHandle: `rh-${m.messageId}`,
+      body: m.body,
+      attributes: {} as never,
+      messageAttributes: {},
+      md5OfBody: "",
+      eventSource: "aws:sqs",
+      eventSourceARN: "arn:aws:sqs:us-east-1:000000000000:video-backup-queue",
+      awsRegion: "us-east-1",
+    })),
+  };
+}
 
-const invoke = (event: unknown) =>
-  (main as unknown as (e: unknown, c: unknown) => Promise<BackupResult | void>)(
-    event,
-    {} as never
-  );
+const invoke = (event: SQSEvent) =>
+  (
+    main as unknown as (
+      e: SQSEvent,
+      c: unknown
+    ) => Promise<SQSBatchResponse>
+  )(event, {} as never);
 
 describe("backupVideos integration", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // IS_LOCAL=true gates the deleteSQSMessages call — keeps existing tests simple
-    process.env = { ...originalEnv, IS_LOCAL: "true" };
-    // Default: getSQSMessages passes through whatever event the handler receives
-    mockGetSQSMessages.mockImplementation(async (event: unknown) => event);
-    mockDeleteSQSMessages.mockResolvedValue(undefined);
+    process.env = {
+      ...originalEnv,
+      YOUTUBE_DATA_API_KEY: "test-key",
+      WAYBACK_MACHINE_API_KEY: "test:secret",
+    };
   });
 
   afterEach(() => {
     process.env = originalEnv;
   });
 
-  it("returns error when event has no Messages", async () => {
-    const result = await invoke({});
-    expect(result).toEqual({
-      status: "error",
-      message: "No messages found in queue",
-    });
-    expect(mockedAxios.get).not.toHaveBeenCalled();
+  it("returns empty batchItemFailures when Records array is empty", async () => {
+    const result = await invoke(makeSQSEvent([]));
+    expect(result.batchItemFailures).toHaveLength(0);
   });
 
-  it("returns ok with processed 0 when Messages is empty", async () => {
-    const result = await invoke({ Messages: [] });
-    expect(result).toEqual({ status: "ok", processed: 0 });
-  });
-
-  it("skips missing video and returns processed 0", async () => {
-    const videoId = "nonexistent";
-    mockedAxios.get.mockResolvedValueOnce({ data: { items: [] } });
-
-    const result = await invoke({ Messages: [{ Body: videoId }] });
-
-    expect(result).toEqual({ status: "ok", processed: 0 });
-    expect(mockedAxios.get).toHaveBeenCalledWith(
-      expect.stringContaining(videoId),
-      expect.any(Object)
+  it("returns empty batchItemFailures when all record bodies are empty", async () => {
+    const result = await invoke(
+      makeSQSEvent([{ messageId: "msg1", body: "" }])
     );
+    expect(result.batchItemFailures).toHaveLength(0);
   });
 
-  it("continues processing after a missing video and counts the successful one", async () => {
-    const missingId = "nonexistent";
-    const validId = "shF8Sv-OswM";
-    mockedAxios.get.mockResolvedValueOnce({ data: { items: [{ id: validId }] } });
-    mockedAxios.get.mockResolvedValueOnce({
-      data: { archived_snapshots: { closest: { available: false } } },
-      status: 200,
-    });
-    mockedAxios.get.mockResolvedValueOnce({ status: 200 });
-
-    const result = await invoke({
-      Messages: [{ Body: missingId }, { Body: validId }],
-    });
-
-    expect(result).toEqual({ status: "ok", processed: 1 });
+  it("does not retry when video is not found on YouTube (permanent)", async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: { items: [] } });
+    const result = await invoke(
+      makeSQSEvent([{ messageId: "msg1", body: "nonexistent" }])
+    );
+    expect(result.batchItemFailures).toHaveLength(0);
   });
 
-  it("returns ok and processed count when backup succeeds", async () => {
-    const videoId = "shF8Sv-OswM";
-    mockedAxios.get.mockResolvedValueOnce({ data: { items: [{ id: videoId }] } });
-    mockedAxios.get.mockResolvedValueOnce({
-      data: { archived_snapshots: { closest: { available: false } } },
-      status: 200,
-    });
-    mockedAxios.get.mockResolvedValueOnce({ status: 200 });
-
-    const result = await invoke({ Messages: [{ Body: videoId }] });
-
-    expect(result).toEqual({ status: "ok", processed: 1 });
-    expect(mockedAxios.get).toHaveBeenCalledTimes(3);
-  });
-
-  it("skips already-archived video and counts it as processed", async () => {
-    const videoId = "shF8Sv-OswM";
-    mockedAxios.get.mockResolvedValueOnce({ data: { items: [{ id: videoId }] } });
-    mockedAxios.get.mockResolvedValueOnce({
-      data: { archived_snapshots: { closest: { available: true } } },
-      status: 200,
-    });
-
-    const result = await invoke({ Messages: [{ Body: videoId }] });
-
-    expect(result).toEqual({ status: "ok", processed: 1 });
-    expect(mockedAxios.get).toHaveBeenCalledTimes(2);
-  });
-
-  it("leaves message in queue when Wayback save fails and returns ok with processed 0", async () => {
-    const videoId = "vid123";
-    mockedAxios.get.mockResolvedValueOnce({ data: { items: [{ id: videoId }] } });
-    mockedAxios.get.mockResolvedValueOnce({
-      data: { archived_snapshots: { closest: { available: false } } },
-      status: 200,
-    });
-    mockedAxios.get.mockResolvedValueOnce({ status: 500 });
-
-    const result = await invoke({ Messages: [{ Body: videoId }] });
-
-    expect(result).toEqual({ status: "ok", processed: 0 });
-  });
-
-  it("returns internal server error when an unexpected error is thrown", async () => {
-    mockedAxios.get.mockRejectedValueOnce(new Error("Unexpected"));
-    const result = await invoke({ Messages: [{ Body: "vid" }] });
-    expect(result).toEqual({
-      status: "error",
-      message: "Internal server error",
-    });
-  });
-
-  describe("message deletion (IS_LOCAL not set)", () => {
-    beforeEach(() => {
-      process.env = { ...originalEnv, SQS_QUEUE_URL: "https://sqs.test/q" };
-    });
-
-    it("deletes message after successful backup", async () => {
-      const videoId = "shF8Sv-OswM";
-      const receiptHandle = "rh-success";
-      mockedAxios.get.mockResolvedValueOnce({ data: { items: [{ id: videoId }] } });
-      mockedAxios.get.mockResolvedValueOnce({
-        data: { archived_snapshots: { closest: { available: false } } },
-        status: 200,
-      });
-      mockedAxios.get.mockResolvedValueOnce({ status: 200 });
-
-      const result = await invoke({
-        Messages: [{ Body: videoId, ReceiptHandle: receiptHandle }],
-      });
-
-      expect(result).toEqual({ status: "ok", processed: 1 });
-      expect(mockDeleteSQSMessages).toHaveBeenCalledWith([
-        { Id: "0", ReceiptHandle: receiptHandle },
-      ]);
-    });
-
-    it("deletes message for already-archived video", async () => {
-      const videoId = "shF8Sv-OswM";
-      const receiptHandle = "rh-archived";
-      mockedAxios.get.mockResolvedValueOnce({ data: { items: [{ id: videoId }] } });
-      mockedAxios.get.mockResolvedValueOnce({
+  it("does not retry when video is already archived", async () => {
+    mockedAxios.get
+      .mockResolvedValueOnce({ data: { items: [{ id: "vid123" }] } })
+      .mockResolvedValueOnce({
         data: { archived_snapshots: { closest: { available: true } } },
-        status: 200,
       });
+    const result = await invoke(
+      makeSQSEvent([{ messageId: "msg1", body: "vid123" }])
+    );
+    expect(result.batchItemFailures).toHaveLength(0);
+  });
 
-      await invoke({ Messages: [{ Body: videoId, ReceiptHandle: receiptHandle }] });
+  it("does not retry on successful Wayback save", async () => {
+    mockedAxios.get
+      .mockResolvedValueOnce({ data: { items: [{ id: "shF8Sv-OswM" }] } })
+      .mockResolvedValueOnce({ data: { archived_snapshots: {} } })
+      .mockResolvedValueOnce({ status: 200 });
+    const result = await invoke(
+      makeSQSEvent([{ messageId: "msg1", body: "shF8Sv-OswM" }])
+    );
+    expect(result.batchItemFailures).toHaveLength(0);
+  });
 
-      expect(mockDeleteSQSMessages).toHaveBeenCalledWith([
-        { Id: "0", ReceiptHandle: receiptHandle },
-      ]);
-    });
+  it("adds to batchItemFailures when Wayback save returns non-200 (transient)", async () => {
+    mockedAxios.get
+      .mockResolvedValueOnce({ data: { items: [{ id: "vid123" }] } })
+      .mockResolvedValueOnce({ data: { archived_snapshots: {} } })
+      .mockResolvedValueOnce({ status: 500 });
+    const result = await invoke(
+      makeSQSEvent([{ messageId: "msg1", body: "vid123" }])
+    );
+    expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg1" }]);
+  });
 
-    it("deletes message for video not found on YouTube (permanent failure)", async () => {
-      const videoId = "gone";
-      const receiptHandle = "rh-gone";
-      mockedAxios.get.mockResolvedValueOnce({ data: { items: [] } });
+  it("adds to batchItemFailures when processVideo throws unexpectedly", async () => {
+    mockedAxios.get
+      .mockResolvedValueOnce({ data: { items: [{ id: "vid123" }] } })
+      .mockRejectedValueOnce(new Error("Network error"));
+    const result = await invoke(
+      makeSQSEvent([{ messageId: "msg1", body: "vid123" }])
+    );
+    expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg1" }]);
+  });
 
-      await invoke({ Messages: [{ Body: videoId, ReceiptHandle: receiptHandle }] });
+  it("handles mixed outcomes: success, not-found (no retry), Wayback failure (retry)", async () => {
+    // YouTube returns vid1 and vid3 — vid2 not found (permanent, no retry)
+    // Concurrent processing: both availability checks fire before either save call,
+    // so mock order is: availability-vid1, availability-vid3, save-vid1, save-vid3.
+    mockedAxios.get
+      .mockResolvedValueOnce({
+        data: { items: [{ id: "vid1" }, { id: "vid3" }] },
+      })
+      .mockResolvedValueOnce({ data: { archived_snapshots: {} } }) // vid1 availability
+      .mockResolvedValueOnce({ data: { archived_snapshots: {} } }) // vid3 availability
+      .mockResolvedValueOnce({ status: 200 })                      // vid1 save (success)
+      .mockResolvedValueOnce({ status: 500 });                     // vid3 save (transient fail)
 
-      expect(mockDeleteSQSMessages).toHaveBeenCalledWith([
-        { Id: "0", ReceiptHandle: receiptHandle },
-      ]);
-    });
+    const result = await invoke(
+      makeSQSEvent([
+        { messageId: "msg1", body: "vid1" },
+        { messageId: "msg2", body: "vid2" },
+        { messageId: "msg3", body: "vid3" },
+      ])
+    );
 
-    it("does not delete message when Wayback save fails (transient — leave for retry)", async () => {
-      const videoId = "vid123";
-      const receiptHandle = "rh-retry";
-      mockedAxios.get.mockResolvedValueOnce({ data: { items: [{ id: videoId }] } });
-      mockedAxios.get.mockResolvedValueOnce({
-        data: { archived_snapshots: { closest: { available: false } } },
-        status: 200,
-      });
-      mockedAxios.get.mockResolvedValueOnce({ status: 500 });
-
-      await invoke({ Messages: [{ Body: videoId, ReceiptHandle: receiptHandle }] });
-
-      expect(mockDeleteSQSMessages).not.toHaveBeenCalled();
-    });
-
-    it("returns ok and logs error when deleteSQSMessages throws", async () => {
-      const videoId = "shF8Sv-OswM";
-      mockedAxios.get.mockResolvedValueOnce({ data: { items: [{ id: videoId }] } });
-      mockedAxios.get.mockResolvedValueOnce({
-        data: { archived_snapshots: { closest: { available: false } } },
-        status: 200,
-      });
-      mockedAxios.get.mockResolvedValueOnce({ status: 200 });
-      mockDeleteSQSMessages.mockRejectedValueOnce(new Error("SQS blip"));
-
-      const result = await invoke({
-        Messages: [{ Body: videoId, ReceiptHandle: "rh-blip" }],
-      });
-
-      // Delete failure must not propagate — messages will retry after visibility timeout
-      expect(result).toEqual({ status: "ok", processed: 1 });
-    });
+    expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg3" }]);
   });
 });
