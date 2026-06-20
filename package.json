@@ -13,7 +13,7 @@
     "remove:dev": "NODE_ENV=development && npx sls remove",
     "test": "jest --ci",
     "test:integration": "jest --config jest.integration.config.js",
-    "test:e2e": "jest --config jest.e2e.config.js",
+    "test:e2e": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.e2e.config.js",
     "test:backupVideos": "cross-env SLS_DEBUG=* npx sls invoke local --function backupVideos --path ./src/mocks/backupVideos.json --config serverless.yml",
     "test:queuePlaylistBackup": "cross-env SLS_DEBUG=* npx sls invoke local --function queuePlaylistBackup --path ./src/mocks/queuePlaylistBackup.json --config serverless.yml"
   },
