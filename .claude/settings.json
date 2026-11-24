@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run lint)",
+      "Bash(pnpm run lint:fix)",
+      "Bash(pnpm run lint:agents)",
+      "Bash(pnpm run typecheck)",
+      "Bash(pnpm test)",
+      "Bash(pnpm run test:integration)",
+      "Bash(pnpm run test:e2e)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ],
+    "ask": [
+      "Bash(pnpm run deploy:dev)",
+      "Bash(pnpm run test:backupVideos)",
+      "Bash(pnpm run test:queuePlaylistBackup)",
+      "Bash(npx sls deploy:*)",
+      "Bash(npx sls invoke:*)"
+    ],
+    "deny": [
+      "Bash(pnpm run deploy:prod)",
+      "Bash(pnpm run remove:*)",
+      "Bash(npx sls remove:*)",
+      "Read(.env*)"
+    ]
+  },
+  "enabledMcpjsonServers": []
+}

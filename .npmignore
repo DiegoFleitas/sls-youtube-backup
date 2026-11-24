@@ -7,3 +7,13 @@ jspm_packages
 
 # esbuild directories
 .esbuild
+
+# SYB-05: never publish env files in an npm pack, and never publish the local
+# agent toolchain (AI-SLS-04).
+.env
+.env.*
+!.env.*.example
+.claude/
+.opencode/
+.mcp.json
+docs/plans/
