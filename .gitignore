@@ -19,6 +19,26 @@ out-logger.json
 
 dist/*
 
+# SYB-05: every env flavour, including the highest-precedence .env / .env.local
+# that serverless-dotenv-plugin loads for *every* stage.
+.env
+.env.local
+.env.*.local
 .env.development
 .env.production
 .env.e2e
+!.env.*.example
+
+# AI-SLS-04: agent toolchain. The tracked, reviewable baselines are the only
+# files allowed in these directories; everything else (local overrides, worktree
+# copies) stays out of the public repo.
+.mcp.json
+.superpowers/
+.claude/*
+!.claude/settings.json
+!.claude/agents/
+.claude/worktrees/
+.opencode/*
+!.opencode/opencode.json
+# AI-SLS-06: untracked plan files steer the agent; keep them out of commits.
+docs/plans/

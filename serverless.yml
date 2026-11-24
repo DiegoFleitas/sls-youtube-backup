@@ -11,6 +11,18 @@ provider:
   apiGateway:
     minimumCompressionSize: 1024
     shouldStartNameWithService: true
+    # SYB-01: the public POST endpoint requires an API key and is throttled.
+    # Clients must send `x-api-key`; issue keys with `sls create-api-key` or
+    # read them from the generated UsagePlanKey resource.
+    apiKeys:
+      - videoBackupApiKey
+    usagePlan:
+      quota:
+        limit: 500
+        period: DAY
+      throttle:
+        burstLimit: 5
+        rateLimit: 2
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
     REGION: ${self:provider.region}
@@ -27,6 +39,17 @@ plugins:
 
 custom:
   defaultStage: dev
+  # SYB-03 / SYB-05: only these keys may be copied into the Lambda environment,
+  # and a deploy fails fast when one is missing. Anything else in the env file
+  # stays out of the stack.
+  dotenv:
+    include:
+      - YOUTUBE_DATA_API_KEY
+      - WAYBACK_MACHINE_API_KEY
+    required:
+      env:
+        - YOUTUBE_DATA_API_KEY
+        - WAYBACK_MACHINE_API_KEY
   esbuild:
     bundle: true
     minify: false
@@ -44,6 +67,9 @@ constructs:
     # Reference an existing function by name — Lift adds the SQS event source mapping.
     worker: backupVideos
     batchSize: 10
+    # BL-SLS-02: bound concurrent consumers so a repeated submission (or an
+    # at-least-once redelivery burst) cannot fan out without limit.
+    maxConcurrency: 5
     extensions:
       queue:
         Properties:
@@ -58,13 +84,28 @@ functions:
     handler: src/functions/queuePlaylistBackup/handler.main
     environment:
       SQS_QUEUE_URL: ${construct:video-backup-queue.queueUrl}
+      # BL-SLS-04: hard cap on the work one request may enqueue.
+      MAX_VIDEOS_PER_REQUEST: "200"
+      # BL-SLS-01: comma-separated entitlement allowlist. When empty, any public
+      # playlist is accepted (previous behaviour) — set this in production.
+      ALLOWED_PLAYLIST_IDS: ${env:ALLOWED_PLAYLIST_IDS, ''}
     memorySize: 128 # MB
-    timeout: 5 # seconds
+    # BL-SLS-03: must exceed the pagination budget; the per-page axios timeout
+    # (5 s) now sits strictly inside it, so slow pages are classified.
+    timeout: 30 # seconds
     events:
       - http:
           path: queuePlaylistBackup
           method: POST
-          cors: true
+          # SYB-01: reject unauthenticated callers at the edge.
+          private: true
+          cors:
+            # SYB-01: pin the allowed browser origin instead of `true` (`*`).
+            origin: ${env:CORS_ALLOWED_ORIGIN, 'https://example.invalid'}
+            headers:
+              - Content-Type
+              - X-Api-Key
+            allowCredentials: false
 
   backupVideos:
     handler: src/functions/backupVideos/handler.main

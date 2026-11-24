@@ -1,12 +1,30 @@
 import { SendMessageBatchCommand, SQSClient } from "@aws-sdk/client-sqs";
 
-const REGION = "us-east-1";
+const DEFAULT_REGION = "us-east-1";
 
-/** Uses custom endpoint when SQS_ENDPOINT_URL or AWS_ENDPOINT_URL is set (e.g. ElasticMQ). */
+/** Loopback endpoints are the only ones allowed to run without SigV4 signing. */
+function isLoopbackEndpoint(endpoint: string): boolean {
+  return /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/i.test(
+    endpoint
+  );
+}
+
+/**
+ * SYB-09: only an explicit SQS_ENDPOINT_URL (the documented E2E override)
+ * redirects the client, and only to a loopback endpoint; the region comes from
+ * the runtime environment instead of a hardcoded literal.
+ */
 function buildSQSClient(): SQSClient {
-  const endpoint = process.env.SQS_ENDPOINT_URL ?? process.env.AWS_ENDPOINT_URL;
-  const config: ConstructorParameters<typeof SQSClient>[0] = { region: REGION };
+  const region = process.env.REGION ?? process.env.AWS_REGION ?? DEFAULT_REGION;
+  const config: ConstructorParameters<typeof SQSClient>[0] = { region };
+
+  const endpoint = process.env.SQS_ENDPOINT_URL;
   if (endpoint) {
+    if (!isLoopbackEndpoint(endpoint)) {
+      throw new Error(
+        "SQS_ENDPOINT_URL must point at a loopback HTTP endpoint (E2E only)"
+      );
+    }
     config.endpoint = endpoint;
     config.credentials = {
       accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "local",

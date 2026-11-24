@@ -54,7 +54,7 @@ describe("queuePlaylistBackup integration", () => {
   });
 
   it("returns 200 and enqueues video IDs when YouTube API returns playlist items", async () => {
-    const playlistId = "PLtest123";
+    const playlistId = "PLtest123ABC";
     const videoIds = ["vid1", "vid2"];
     mockedAxios.get.mockResolvedValueOnce({
       data: {
@@ -87,7 +87,7 @@ describe("queuePlaylistBackup integration", () => {
   it("returns 500 when YouTube API throws", async () => {
     mockedAxios.get.mockRejectedValueOnce(new Error("Network error"));
     const event = makeEvent({
-      body: { playlistId: "PLfail" } as unknown as string,
+      body: { playlistId: "PLfailXYZ123" } as unknown as string,
     });
     const result = await invoke(event);
     expect(result?.statusCode).toBe(500);
@@ -96,7 +96,7 @@ describe("queuePlaylistBackup integration", () => {
   });
 
   it("returns 500 when SQS batch send partially fails", async () => {
-    const playlistId = "PLpartial";
+    const playlistId = "PLpartialXYZ123";
     mockedAxios.get.mockResolvedValueOnce({
       data: {
         items: [{ snippet: { resourceId: { videoId: "vid1" } } }],

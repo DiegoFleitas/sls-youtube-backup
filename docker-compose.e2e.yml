@@ -5,9 +5,18 @@
 
 services:
   elasticmq:
-    image: softwaremill/elasticmq-native:latest
+    # SYB-06: pinned by digest (tag `latest` as published 2026-04-05) so an
+    # upstream re-tag cannot silently change what runs.
+    image: softwaremill/elasticmq-native@sha256:e4580ab9ad1bd5cd37b4ba04911bc5ccc8cd2d9ab4de56ece65acee71c24e05c
+    # SYB-06: publish on loopback only — Docker's iptables rules bypass UFW, so
+    # a bare "9324:9324" is reachable from the whole LAN on WSL2.
     ports:
-      - "9324:9324"
-      - "9325:9325"
+      - "127.0.0.1:9324:9324"
+      - "127.0.0.1:9325:9325"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     volumes:
-      - ./e2e/elasticmq.conf:/opt/elasticmq.conf
+      - ./e2e/elasticmq.conf:/opt/elasticmq.conf:ro

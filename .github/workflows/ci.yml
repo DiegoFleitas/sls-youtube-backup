@@ -31,6 +31,15 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
+      # AI-SLS-05: fail when an agent definition grants an unscoped Bash tool.
+      - name: Lint agent definitions
+        run: pnpm run lint:agents
+
+      # AI-SLS-10: type-level regressions were previously accepted on the
+      # strength of lint + Jest alone.
+      - name: Typecheck
+        run: pnpm run typecheck
+
       - name: Test
         run: pnpm test
 
